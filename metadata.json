@@ -1,0 +1,5 @@
+{
+  "name": "CNU Scholarship AI Assistant",
+  "description": "A personalized chatbot to help Chonnam National University students discover and understand available scholarships through a guided self-diagnosis and natural language queries.",
+  "requestFramePermissions": []
+}
