@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User, AllScholarships } from '../../types';
 import AdminStats from './AdminStats';
@@ -12,7 +13,7 @@ interface AdminDashboardProps {
   onAdd: (scholarship: AllScholarships) => void;
   onUpdate: (scholarship: AllScholarships) => void;
   onDelete: (scholarshipId: string) => void;
-  onPushNotification: (scholarship: AllScholarships) => void;
+  onPushNotification: (scholarship: AllScholarships, message: string) => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification }) => {

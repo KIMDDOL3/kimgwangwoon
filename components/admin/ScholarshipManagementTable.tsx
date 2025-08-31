@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { AllScholarships } from '../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../constants';
 import ScholarshipFormModal from './ScholarshipFormModal';
+import PushNotificationModal from './PushNotificationModal'; // New import
 import Button from '../ui/Button';
 
 interface ManagementTableProps {
@@ -9,25 +11,28 @@ interface ManagementTableProps {
   onAdd: (scholarship: AllScholarships) => void;
   onUpdate: (scholarship: AllScholarships) => void;
   onDelete: (scholarshipId: string) => void;
-  onPushNotification: (scholarship: AllScholarships) => void;
+  onPushNotification: (scholarship: AllScholarships, message: string) => void; // Updated signature
 }
 
 const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarships, onAdd, onUpdate, onDelete, onPushNotification }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingScholarship, setEditingScholarship] = useState<AllScholarships | null>(null);
+    
+    const [isPushModalOpen, setIsPushModalOpen] = useState(false);
+    const [scholarshipForPush, setScholarshipForPush] = useState<AllScholarships | null>(null);
 
     const handleOpenAddModal = () => {
         setEditingScholarship(null);
-        setIsModalOpen(true);
+        setIsFormModalOpen(true);
     };
 
     const handleOpenEditModal = (scholarship: AllScholarships) => {
         setEditingScholarship(scholarship);
-        setIsModalOpen(true);
+        setIsFormModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleCloseFormModal = () => {
+        setIsFormModalOpen(false);
         setEditingScholarship(null);
     };
 
@@ -38,7 +43,24 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
             onAdd(scholarship);
             alert('새로운 장학금이 추가되었습니다.');
         }
-        handleCloseModal();
+        handleCloseFormModal();
+    };
+
+    const handleOpenPushModal = (scholarship: AllScholarships) => {
+        setScholarshipForPush(scholarship);
+        setIsPushModalOpen(true);
+    };
+
+    const handleClosePushModal = () => {
+        setIsPushModalOpen(false);
+        setScholarshipForPush(null);
+    };
+
+    const handleSendPushNotification = (message: string) => {
+        if (scholarshipForPush) {
+            onPushNotification(scholarshipForPush, message);
+        }
+        handleClosePushModal();
     };
 
     return (
@@ -79,7 +101,7 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
                                     <Button onClick={() => onDelete(s.id)} variant="secondary">삭제</Button>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <Button onClick={() => onPushNotification(s)} variant="primary">
+                                    <Button onClick={() => handleOpenPushModal(s)} variant="primary" title={`'${s.title}' 알림 보내기`}>
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
                                         Push
                                     </Button>
@@ -90,12 +112,20 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
                 </table>
                  {scholarships.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">등록된 장학금이 없습니다.</p>}
             </div>
-            {isModalOpen && (
+            {isFormModalOpen && (
                 <ScholarshipFormModal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
+                    isOpen={isFormModalOpen}
+                    onClose={handleCloseFormModal}
                     onSave={handleSave}
                     scholarship={editingScholarship}
+                />
+            )}
+            {isPushModalOpen && scholarshipForPush && (
+                <PushNotificationModal
+                    isOpen={isPushModalOpen}
+                    onClose={handleClosePushModal}
+                    onSend={handleSendPushNotification}
+                    scholarship={scholarshipForPush}
                 />
             )}
         </>

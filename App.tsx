@@ -27,11 +27,11 @@ const App: React.FC = () => {
     setScholarships(prev => [...prev, { ...newScholarship, id: `new-${Date.now()}` }]);
   };
   
-  const handlePushNotification = (scholarship: AllScholarships) => {
+  const handlePushNotification = (scholarship: AllScholarships, message: string) => {
       const newNotification: AppNotification = {
           id: `notif-${Date.now()}`,
-          title: '새로운 장학금 추천',
-          message: `'${scholarship.title}' 장학금이 새로 등록되었습니다.`,
+          title: scholarship.title, // Use scholarship title
+          message: message, // Use custom message from admin
           scholarshipId: scholarship.id,
       };
       setNotifications(prev => [newNotification, ...prev]);
