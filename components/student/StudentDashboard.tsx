@@ -61,6 +61,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 onDismiss={onDismissNotification}
                 onDismissAll={onDismissAllNotifications}
                 onAskAi={handleAskAi}
+                allScholarships={allScholarships}
               />
               <Button onClick={onLogout} variant="secondary">
                 로그아웃

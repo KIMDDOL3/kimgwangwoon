@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import LoginScreen from './components/LoginScreen';
 import StudentDashboard from './components/student/StudentDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { User, Role, AllScholarships, AppNotification } from './types';
-import { MOCK_USER, ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS } from './constants';
+import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_USER } from './constants';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
