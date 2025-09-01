@@ -77,7 +77,7 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300">
                         <tr>
                             <th scope="col" className="px-6 py-3">장학금명</th>
                             <th scope="col" className="px-6 py-3">유형</th>
@@ -88,10 +88,10 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
                     </thead>
                     <tbody>
                         {scholarships.map(s => (
-                            <tr key={s.id} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600/50">
-                                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{s.title}</td>
+                            <tr key={s.id} className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50 hover:bg-white/70 dark:hover:bg-gray-900/40">
+                                <td className="px-6 py-4 font-semibold text-lg text-gray-900 dark:text-white">{s.title}</td>
                                 <td className="px-6 py-4">
-                                    <span className="px-2 py-1 text-xs font-semibold rounded-full" style={{ backgroundColor: `${SCHOLARSHIP_CATEGORIES[s.category].color}20`, color: SCHOLARSHIP_CATEGORIES[s.category].color }}>
+                                    <span className={`px-3 py-1.5 text-xs font-bold rounded-full ${SCHOLARSHIP_CATEGORIES[s.category].className}`}>
                                         {SCHOLARSHIP_CATEGORIES[s.category].label}
                                     </span>
                                 </td>

@@ -76,16 +76,9 @@ export const scoreScholarships = (
         reasons.push("기본 요건을 충족합니다.");
     }
 
-    // Construct a ScoredScholarship object. It extends Scholarship, so we extract the relevant fields from AllScholarships.
+    // FIX: Construct ScoredScholarship by spreading the original scholarship object to ensure all properties from AllScholarships are carried over.
     const scoredItem: ScoredScholarship = {
-        id: s.id,
-        title: s.title,
-        category: s.category,
-        summary: s.summary,
-        fullDescription: s.fullDescription,
-        requirements: s.requirements,
-        applicationUrl: s.applicationUrl,
-        deadline: s.deadline,
+        ...s,
         score: finalScore,
         reasons,
     };

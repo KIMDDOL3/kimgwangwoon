@@ -10,6 +10,7 @@ import Button from '../ui/Button';
 import NationalScholarshipCard from './NationalScholarshipCard';
 import NotificationBell from './NotificationBell';
 import ContactAdminCard from './ContactAdminCard';
+import JnuNoticeCard from './JnuNoticeCard';
 
 interface StudentDashboardProps {
   user: User;
@@ -45,16 +46,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
   }
 
   return (
-    <div 
-      className="min-h-screen bg-cover bg-center bg-fixed" 
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2070&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}
-    >
-      <div className="min-h-screen bg-black/10 dark:bg-black/40 backdrop-blur-sm">
-        <header className="bg-blue-800/80 backdrop-blur-md text-white shadow-lg p-4 sticky top-0 z-20 border-b border-white/20">
+    <div className="min-h-screen">
+        <header className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-lg text-white shadow-md p-4 sticky top-0 z-20 border-b border-gray-200 dark:border-gray-700/80">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-bold">전남대학교 장학금 Dashboard</h1>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">전남대학교 장학금 Dashboard</h1>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-200 hidden md:block">
+              <span className="text-gray-600 dark:text-gray-300 hidden md:block">
                 환영합니다, <span className="font-semibold">{user.name}</span>님
               </span>
               <NotificationBell 
@@ -72,27 +69,45 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
         </header>
 
         <main className="p-4 md:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 space-y-6">
-              <ProfileCard user={user} />
-              <NationalScholarshipCard allScholarships={allScholarships} onAskAi={handleAskAi} />
-              <GpaSearchCard allScholarships={allScholarships} onAskAi={handleAskAi} />
-              <ScholarshipHubPreview onNavigate={handleNavigateToHub} allScholarships={allScholarships} />
-              <ApplicationHistory />
-              <ContactAdminCard />
-            </div>
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* JNU Banner */}
+            <a href="https://www.jnu.ac.kr" target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden shadow-lg group relative">
+                <img src="https://storage.cloud.google.com/personmate/test.png" alt="전남대학교 AI 서머스쿨" className="w-full h-48 object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-110"/>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent flex flex-col items-center justify-center p-4 text-center">
+                    <h2 className="font-nanum text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-wide transition-transform duration-500 ease-in-out group-hover:scale-105 group-hover:-translate-y-2">
+                        지역과 함께 세계로 미래로
+                    </h2>
+                    <p className="text-white/80 font-semibold mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out">
+                        전남대학교 홈페이지 바로가기
+                    </p>
+                </div>
+            </a>
+            
+            {/* JNU Notice Card */}
+            <JnuNoticeCard />
+            
+            {/* Main Dashboard Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-6">
+                <ProfileCard user={user} />
+                <NationalScholarshipCard allScholarships={allScholarships} onAskAi={handleAskAi} />
+                <GpaSearchCard allScholarships={allScholarships} onAskAi={handleAskAi} />
+                <ScholarshipHubPreview onNavigate={handleNavigateToHub} allScholarships={allScholarships} />
+                <ApplicationHistory />
+                <ContactAdminCard />
+              </div>
 
-            <div className="lg:col-span-2">
-              <ChatInterface 
-                user={user} 
-                initialPrompt={initialChatPrompt}
-                onPromptConsumed={handlePromptConsumed}
-                allScholarships={allScholarships}
-              />
+              <div className="lg:col-span-2">
+                <ChatInterface 
+                  user={user} 
+                  initialPrompt={initialChatPrompt}
+                  onPromptConsumed={handlePromptConsumed}
+                  allScholarships={allScholarships}
+                />
+              </div>
             </div>
           </div>
         </main>
-      </div>
     </div>
   );
 };

@@ -11,7 +11,7 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleApplicationSubmit = (statement: string) => {
+  const handleApplicationSubmit = (statement: string, file?: File) => {
     const applicationData: ApplicationData = {
       scholarshipId: scholarship.id,
       scholarshipTitle: scholarship.title,
@@ -21,6 +21,7 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
       statement: statement,
       submissionDate: new Date().toLocaleString('ko-KR'),
       status: 'Applied',
+      fileName: file?.name,
     };
     
     // Save submission to local storage
@@ -74,13 +75,13 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
         <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             {isExpanded ? '간략히 보기' : '자세히 보기'}
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             온라인 지원
           </button>

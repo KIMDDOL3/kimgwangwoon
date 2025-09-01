@@ -107,7 +107,7 @@ const ScholarshipDistributionChart: React.FC<ChartProps> = ({ scholarships, isPr
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
             <span className={`font-black ${isPreview ? 'text-2xl' : 'text-4xl'} text-gray-800 dark:text-white`}>{total}</span>
-            <span className={`font-semibold ${isPreview ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>총 장학금</span>
+            <span className={`font-semibold ${isPreview ? 'text-xs' : 'text-base'} text-gray-500 dark:text-gray-400`}>총 장학금</span>
         </div>
       </div>
       <div className={`flex ${isPreview ? 'flex-wrap justify-center gap-x-4 gap-y-1' : 'flex-col justify-center space-y-2'}`}>
@@ -123,8 +123,8 @@ const ScholarshipDistributionChart: React.FC<ChartProps> = ({ scholarships, isPr
             onMouseLeave={handleMouseLeave}
           >
             <div className="w-3 h-3 rounded-full mr-2 flex-shrink-0" style={{ backgroundColor: color }}></div>
-            <span className={`font-semibold ${isPreview ? 'text-xs' : 'text-sm'} text-gray-700 dark:text-gray-300`}>{label}</span>
-            <span className={`ml-2 ${isPreview ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>{count}개</span>
+            <span className={`font-semibold ${isPreview ? 'text-xs' : 'text-base'} text-gray-700 dark:text-gray-300`}>{label}</span>
+            <span className={`ml-2 ${isPreview ? 'text-xs' : 'text-base'} text-gray-500 dark:text-gray-400`}>{count}개</span>
           </div>
         ))}
       </div>

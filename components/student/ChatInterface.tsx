@@ -123,10 +123,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
 
   return (
     <div className="flex flex-col bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg h-[85vh] max-h-[85vh]">
-       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-blue-800 dark:text-blue-300">AI 챗봇 상담</h3>
+       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-green-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+            AI
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">AI 챗봇 상담</h3>
+            <p className="text-base text-gray-500 dark:text-gray-400">무엇이든 물어보세요</p>
+          </div>
        </div>
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50/50 dark:bg-gray-900/20">
         <div className="space-y-6">
           {messages.map(msg => (
             <Message key={msg.id} message={msg} user={user} />
@@ -142,7 +148,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
         <div ref={messagesEndRef} />
       </main>
       {!isDiagnosing && (
-        <footer className="border-t border-gray-200 dark:border-gray-700 p-4">
+        <footer className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -155,13 +161,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="질문을 입력하세요..."
-              className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-700 bg-gray-50 dark:bg-gray-700"
+              className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-green-700 bg-gray-100 dark:bg-gray-700"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !inputValue.trim()}
-              className="bg-blue-700 text-white rounded-full p-3 hover:bg-blue-800 disabled:bg-blue-400 dark:disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors duration-200"
+              className="bg-green-700 text-white rounded-full p-3 hover:bg-green-800 disabled:bg-green-400 dark:disabled:bg-green-800 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-110"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor" transform="rotate(90)">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

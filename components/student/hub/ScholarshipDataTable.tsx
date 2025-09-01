@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { AllScholarships, ScholarshipCategory } from '../../../types';
+import { AllScholarships, ScholarshipCategory, User } from '../../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../../constants';
+import Button from '../../ui/Button';
 
 interface DataTableProps {
   scholarships: AllScholarships[];
   onAskAi: (scholarshipTitle: string) => void;
+  onApply: (scholarship: AllScholarships) => void;
 }
 
 type SortKey = 'title' | 'provider' | 'deadline';
@@ -40,10 +42,9 @@ const Th: React.FC<{
     );
 };
 
-const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi }) => {
+const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi, onApply }) => {
   const [sourceFilter, setSourceFilter] = useState<'All' | 'Internal' | 'External'>('All');
   const [categoryFilter, setCategoryFilter] = useState<ScholarshipCategory | 'All'>('All');
-  // As requested, the default sort order is set to 'deadline' in ascending ('asc') order.
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'deadline', direction: 'asc' });
 
   const filteredScholarships = useMemo(() => {
@@ -59,19 +60,14 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
     sortableItems.sort((a, b) => {
       let aValue: string | Date = a[sortConfig.key];
       let bValue: string | Date = b[sortConfig.key];
-
-      // To ensure chronological accuracy, date strings are handled specifically when sorting by 'deadline'.
       if (sortConfig.key === 'deadline') {
-        // The logic converts date strings (e.g., "2024-12-15") into Date objects before comparison.
         const isADate = !isNaN(new Date(aValue).getTime());
         const isBDate = !isNaN(new Date(bValue).getTime());
-        // Push items with invalid dates to the end of the list.
         if (!isADate) return 1;
         if (!isBDate) return -1;
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
-
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -94,19 +90,19 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
             <span className="font-semibold text-sm text-gray-600 dark:text-gray-300 mr-2">구분:</span>
             <button
               onClick={() => setSourceFilter('All')}
-              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'All' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'All' ? 'bg-green-600 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
             >
               전체
             </button>
             <button
               onClick={() => setSourceFilter('Internal')}
-              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'Internal' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'Internal' ? 'bg-green-600 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
             >
               교내
             </button>
             <button
               onClick={() => setSourceFilter('External')}
-              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'External' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'External' ? 'bg-green-600 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
             >
               교외
             </button>
@@ -116,7 +112,7 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
             <span className="font-semibold text-sm text-gray-600 dark:text-gray-300 mr-2">유형:</span>
             <button
               onClick={() => setCategoryFilter('All')}
-              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === 'All' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === 'All' ? 'bg-green-600 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
             >
               전체
             </button>
@@ -124,7 +120,7 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
               <button
                 key={key}
                 onClick={() => setCategoryFilter(key as ScholarshipCategory)}
-                className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === key ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === key ? 'bg-green-600 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
               >
                 {label}
               </button>
@@ -132,38 +128,37 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
         </div>
       </div>
 
-
-      <div className="overflow-x-auto relative border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="overflow-x-auto relative border border-white/20 rounded-lg">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-300">
+          <thead className="text-sm text-gray-700 uppercase bg-gray-50/50 dark:bg-gray-700/50 dark:text-gray-300">
             <tr>
               <Th title="장학금명" sortKey="title" sortConfig={sortConfig} requestSort={requestSort} />
               <th scope="col" className="px-6 py-3">유형</th>
               <Th title="지급기관" sortKey="provider" sortConfig={sortConfig} requestSort={requestSort} />
               <Th title="신청마감" sortKey="deadline" sortConfig={sortConfig} requestSort={requestSort} />
-              <th scope="col" className="px-6 py-3">AI 문의</th>
+              <th scope="col" className="px-6 py-3">신청/문의</th>
             </tr>
           </thead>
           <tbody>
             {sortedScholarships.map(s => (
-              <tr key={s.id} className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{s.title}</td>
+              <tr key={s.id} className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50 last:border-b-0 hover:bg-white/70 dark:hover:bg-gray-900/40 transition-colors">
+                <td className="px-6 py-4 font-semibold text-lg text-gray-900 dark:text-white">{s.title}</td>
                 <td className="px-6 py-4">
-                  <span className="px-2 py-1 text-xs font-semibold rounded-full" style={{ backgroundColor: `${SCHOLARSHIP_CATEGORIES[s.category].color}20`, color: SCHOLARSHIP_CATEGORIES[s.category].color }}>
+                  <span className={`px-3 py-1.5 text-sm font-bold rounded-full ${SCHOLARSHIP_CATEGORIES[s.category].className}`}>
                     {SCHOLARSHIP_CATEGORIES[s.category].label}
                   </span>
                 </td>
-                <td className="px-6 py-4">{s.provider}</td>
-                <td className="px-6 py-4 font-mono">{s.deadline}</td>
+                <td className="px-6 py-4 text-base">{s.provider}</td>
+                <td className="px-6 py-4 font-mono text-base">{s.deadline}</td>
                 <td className="px-6 py-4">
-                  <button 
-                    onClick={() => onAskAi(s.title)} 
-                    className="bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600/50 font-semibold py-1.5 px-3 rounded-full text-xs flex items-center gap-1.5 transition-colors shadow-sm"
-                    title={`'${s.title}'에 대해 AI에게 질문하기`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.837 8.837 0 01-4.43-1.252l-1.396.485a.5.5 0 01-.61-.61l.485-1.396A8.837 8.837 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.707 14.293a6.837 6.837 0 004.243 1.957 7.002 7.002 0 007-7c0-2.83-2.488-5.23-5.83-5.553a.5.5 0 01-.17-.971A8.002 8.002 0 0118 10c0 3.313-3.134 6-7 6a7.837 7.837 0 01-3.69-1.006l-1.854.642a1.5 1.5 0 01-1.82-1.82l.642-1.854A7.837 7.837 0 014 10c0-.341.042-.675.12-1a.5.5 0 01.97.24A6.994 6.994 0 004 10c0 1.58.68 3.024 1.77 4.068a.5.5 0 01-.063.225z" clipRule="evenodd" /></svg>
-                    AI 질문
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Button onClick={() => onApply(s)} variant="primary" className="py-2 px-3">
+                      온라인 지원
+                    </Button>
+                    <Button onClick={() => onAskAi(s.title)} variant="secondary" className="py-2 px-3">
+                      AI 문의
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

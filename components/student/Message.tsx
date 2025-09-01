@@ -9,7 +9,7 @@ interface MessageProps {
 }
 
 const BotAvatar: React.FC = () => (
-    <div className="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+    <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
         AI
     </div>
 );
@@ -54,10 +54,10 @@ const Message: React.FC<MessageProps> = ({ message, user }) => {
           className={`px-4 py-3 rounded-2xl shadow-sm ${
             isBot
               ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'
-              : 'bg-blue-700 text-white rounded-br-none'
+              : 'bg-green-700 text-white rounded-br-none'
           }`}
         >
-          {message.text && <p className="whitespace-pre-wrap">{message.text}</p>}
+          {message.text && <p className="whitespace-pre-wrap text-base">{message.text}</p>}
         </div>
 
         {isBot && message.sources && message.sources.length > 0 && (
@@ -67,7 +67,7 @@ const Message: React.FC<MessageProps> = ({ message, user }) => {
                   {message.sources.map(source => (
                       <div key={source.id} className="text-sm text-gray-800 dark:text-gray-200">
                          <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-blue-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-green-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                             </svg>
                             <span>{source.title}</span>
@@ -96,7 +96,7 @@ const Message: React.FC<MessageProps> = ({ message, user }) => {
               <button
                 key={index}
                 onClick={action.handler}
-                className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold py-2 px-4 rounded-full text-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 font-semibold py-2 px-4 rounded-full text-sm hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
               >
                 {action.text}
               </button>

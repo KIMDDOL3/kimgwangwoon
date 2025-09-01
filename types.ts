@@ -54,7 +54,8 @@ export type AllScholarships = {
 };
 
 
-export interface ScoredScholarship extends Scholarship {
+// FIX: Changed ScoredScholarship to extend AllScholarships to include source and provider.
+export interface ScoredScholarship extends AllScholarships {
   score: number;
   reasons: string[];
 }
@@ -100,6 +101,7 @@ export interface ApplicationData {
   statement: string;
   submissionDate: string;
   status: ApplicationStatus;
+  fileName?: string; // To store the name of the uploaded PDF file
 }
 
 export interface AppNotification {

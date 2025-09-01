@@ -7,6 +7,9 @@ let ai: GoogleGenAI | null = null;
 
 const getAi = (): GoogleGenAI => {
     if (!ai) {
+        // For deployment on services like Google Cloud Run,
+        // the API_KEY must be set as an environment variable in the service configuration.
+        // The code correctly reads this variable.
         if (!process.env.API_KEY) {
             throw new Error("API_KEY environment variable not set");
         }
@@ -76,7 +79,13 @@ const getIntent = async (userMessage: string): Promise<IntentResponse> => {
         }
     });
 
-    return JSON.parse(response.text.trim());
+    try {
+        return JSON.parse(response.text.trim());
+    } catch (e) {
+        console.error("Failed to parse intent JSON from AI response:", response.text, e);
+        // Fallback to a safe default to prevent crashing the application
+        return { intent: 'GENERAL_CHAT', query: userMessage };
+    }
 };
 
 export interface RagResponse {
@@ -114,11 +123,21 @@ const generateFinalResponse = async (userMessage: string, context: string, avail
         }
     });
 
-    const parsedResponse = JSON.parse(response.text.trim());
-    const sourceIds = new Set(parsedResponse.source_ids || []);
-    const sources = availableSources.filter(s => sourceIds.has(s.id));
-
-    return { answer: parsedResponse.answer, sources };
+    try {
+        const parsedResponse = JSON.parse(response.text.trim());
+        const sourceIds = new Set(parsedResponse.source_ids || []);
+        const sources = availableSources.filter(s => sourceIds.has(s.id));
+        return { answer: parsedResponse.answer, sources };
+    } catch (e) {
+        console.error("Failed to parse final response JSON from AI response:", response.text, e);
+        // If JSON parsing fails but we have text, return the raw text.
+        // This is better than crashing.
+        if (response.text) {
+            return { answer: response.text, sources: [] };
+        }
+        // As a last resort, throw an error if the response is completely empty/unusable.
+        throw new Error("Failed to generate or parse a valid response from the AI.");
+    }
 };
 
 

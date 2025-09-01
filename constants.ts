@@ -136,14 +136,13 @@ export const ALL_SCHOLARSHIPS: AllScholarships[] = [
   })),
 ];
 
-
-// FIX: Removed the `icon` property and its JSX value because JSX is invalid in a .ts file. This property was not used anywhere in the application.
-export const SCHOLARSHIP_CATEGORIES: Record<ScholarshipCategory, { label: string; color: string; }> = {
-    'Merit-based': { label: '성적우수', color: '#3b82f6' },
-    'Need-based': { label: '생활지원', color: '#facc15' }, // Changed to gold for National Scholarship
-    'Talent-based': { label: '특기/인재', color: '#f97316' },
-    'External': { label: '교외/재단', color: '#8b5cf6' },
-    'Other': { label: '기타', color: '#64748b' },
+// FIX: Added a 'color' property for use in charts, and updated the type definition accordingly.
+export const SCHOLARSHIP_CATEGORIES: Record<ScholarshipCategory, { label: string; className: string; color: string; }> = {
+    'Merit-based': { label: '성적우수', className: 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white', color: '#3b82f6' },
+    'Need-based': { label: '생활지원', className: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white', color: '#f59e0b' },
+    'Talent-based': { label: '특기/인재', className: 'bg-gradient-to-r from-orange-500 to-red-500 text-white', color: '#f97316' },
+    'External': { label: '교외/재단', className: 'bg-gradient-to-r from-violet-500 to-purple-500 text-white', color: '#8b5cf6' },
+    'Other': { label: '기타', className: 'bg-gradient-to-r from-gray-500 to-gray-600 text-white', color: '#6b7280' },
 };
 
 

@@ -1,9 +1,9 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import LoginScreen from './components/LoginScreen';
 import StudentDashboard from './components/student/StudentDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
-import { User, Role, AllScholarships, AppNotification } from './types';
+import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus } from './types';
 import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_USER } from './constants';
 
 const App: React.FC = () => {
@@ -11,6 +11,61 @@ const App: React.FC = () => {
   const [role, setRole] = useState<Role | null>(null);
   const [scholarships, setScholarships] = useState<AllScholarships[]>(INITIAL_SCHOLARSHIPS);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [applicationData, setApplicationData] = useState<ApplicationData[]>([]);
+
+  const loadApplicationData = useCallback(() => {
+    try {
+      const storedData = localStorage.getItem('jnu_scholarship_applications');
+      if (storedData) {
+        setApplicationData(JSON.parse(storedData));
+      }
+    } catch (error) {
+      console.error("Failed to load application data:", error);
+      setApplicationData([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadApplicationData();
+    const handleStorageChange = () => loadApplicationData();
+    window.addEventListener('applicationSubmitted', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange); // Also listen for direct storage changes
+    return () => {
+      window.removeEventListener('applicationSubmitted', handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loadApplicationData]);
+  
+  const handleUpdateApplicationStatus = (
+    userId: string,
+    scholarshipId: string,
+    submissionDate: string,
+    newStatus: ApplicationStatus
+  ) => {
+    try {
+      const storedData = localStorage.getItem('jnu_scholarship_applications');
+      if (storedData) {
+        let applications: ApplicationData[] = JSON.parse(storedData);
+        const appIndex = applications.findIndex(
+          (app) =>
+            app.userId === userId &&
+            app.scholarshipId === scholarshipId &&
+            app.submissionDate === submissionDate
+        );
+
+        if (appIndex !== -1) {
+          applications[appIndex].status = newStatus;
+          localStorage.setItem('jnu_scholarship_applications', JSON.stringify(applications));
+          loadApplicationData(); // Reload data to reflect changes
+          // Dispatch event to notify other components if needed
+          window.dispatchEvent(new CustomEvent('applicationUpdated'));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+    }
+  };
+
 
   const handleRoleSelect = (selectedRole: Role) => {
     setUser(MOCK_USER);
@@ -84,13 +139,15 @@ const App: React.FC = () => {
           onUpdate={handleUpdateScholarship}
           onDelete={handleDeleteScholarship}
           onPushNotification={handlePushNotification}
+          applicationData={applicationData}
+          onUpdateStatus={handleUpdateApplicationStatus}
         />
       );
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
+    <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans">
       {renderContent()}
     </div>
   );

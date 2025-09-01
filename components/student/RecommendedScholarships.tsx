@@ -19,7 +19,7 @@ const RecommendedScholarships: React.FC<RecommendedScholarshipsProps> = ({ schol
   const topScholarships = scholarships.filter(s => s.score > 0).slice(0, 3);
   const [modalScholarship, setModalScholarship] = useState<ScoredScholarship | null>(null);
 
-  const handleApplicationSubmit = (statement: string) => {
+  const handleApplicationSubmit = (statement: string, file?: File) => {
     if (!modalScholarship) return;
 
     const applicationData: ApplicationData = {
@@ -31,6 +31,7 @@ const RecommendedScholarships: React.FC<RecommendedScholarshipsProps> = ({ schol
       statement: statement,
       submissionDate: new Date().toLocaleString('ko-KR'),
       status: 'Applied',
+      fileName: file?.name,
     };
 
     try {
