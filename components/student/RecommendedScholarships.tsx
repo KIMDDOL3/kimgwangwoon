@@ -30,10 +30,11 @@ const RecommendedScholarships: React.FC<RecommendedScholarshipsProps> = ({ schol
       universityId: user.universityId,
       statement: statement,
       submissionDate: new Date().toLocaleString('ko-KR'),
+      status: 'Applied',
     };
 
     try {
-      const LOCAL_STORAGE_KEY = 'cnu_scholarship_applications';
+      const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
       const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
       const applications: ApplicationData[] = storedApplicationsRaw ? JSON.parse(storedApplicationsRaw) : [];
       applications.push(applicationData);

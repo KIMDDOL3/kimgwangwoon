@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Scholarship, User } from '../../types';
+import { getStatementReview } from '../../services/geminiService';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -11,12 +12,22 @@ interface ApplicationModalProps {
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, onSubmit, scholarship, user }) => {
   const [statement, setStatement] = useState('');
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [reviewFeedback, setReviewFeedback] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(statement);
+  };
+  
+  const handleAiReview = async () => {
+    setIsReviewing(true);
+    setReviewFeedback(null);
+    const feedback = await getStatementReview(statement);
+    setReviewFeedback(feedback);
+    setIsReviewing(false);
   };
 
   return (
@@ -58,6 +69,23 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, on
                 required
               ></textarea>
             </div>
+             {/* AI Feedback Section */}
+            {isReviewing && (
+                <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md flex items-center space-x-3">
+                    <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">AI가 자기소개서를 검토하고 있습니다...</p>
+                </div>
+            )}
+            {reviewFeedback && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 border-l-4 border-blue-500 rounded-r-lg">
+                    <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2">AI 검토 의견</h4>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{reviewFeedback}</p>
+                </div>
+            )}
           </div>
           <div className="mt-6 flex justify-end space-x-3">
             <button
@@ -66,6 +94,14 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, on
               className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200"
             >
               취소
+            </button>
+            <button
+              type="button"
+              onClick={handleAiReview}
+              disabled={isReviewing || !statement.trim()}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-green-400 dark:disabled:bg-green-800 disabled:cursor-not-allowed"
+            >
+              AI 검토받기
             </button>
             <button
               type="submit"

@@ -20,11 +20,12 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
       universityId: user.universityId,
       statement: statement,
       submissionDate: new Date().toLocaleString('ko-KR'),
+      status: 'Applied',
     };
     
     // Save submission to local storage
     try {
-      const LOCAL_STORAGE_KEY = 'cnu_scholarship_applications';
+      const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
       const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
       const applications: ApplicationData[] = storedApplicationsRaw ? JSON.parse(storedApplicationsRaw) : [];
       applications.push(applicationData);

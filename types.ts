@@ -89,6 +89,8 @@ export interface FAQItem {
   answer: string;
 }
 
+export type ApplicationStatus = 'Applied' | 'Awarded' | 'Rejected';
+
 export interface ApplicationData {
   scholarshipId: string;
   scholarshipTitle: string;
@@ -97,6 +99,7 @@ export interface ApplicationData {
   universityId: string;
   statement: string;
   submissionDate: string;
+  status: ApplicationStatus;
 }
 
 export interface AppNotification {

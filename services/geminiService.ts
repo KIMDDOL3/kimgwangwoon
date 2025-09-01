@@ -161,3 +161,38 @@ export const getChatbotResponse = async (
     return { answer: "죄송합니다. 시스템에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", sources: [] };
   }
 };
+
+export const getStatementReview = async (statement: string): Promise<string> => {
+    if (!statement.trim()) {
+        return "자기소개서를 먼저 작성해주세요.";
+    }
+
+    const ai = getAi();
+    const systemInstruction = `You are a helpful university career advisor. Your task is to review a student's personal statement for a scholarship application.
+    Provide constructive, actionable feedback in Korean.
+    Focus on:
+    1.  Clarity and conciseness.
+    2.  Persuasiveness and impact.
+    3.  Grammar and tone.
+    4.  Connection to the scholarship's likely purpose (e.g., academic merit, financial need, leadership).
+
+    Structure your feedback with clear headings for each point (e.g., "**총평:**", "**개선 제안:**").
+    Keep the feedback encouraging and supportive. Do not rewrite the statement for the student, but guide them on how to improve it themselves.
+    For example, instead of "이렇게 고치세요", say "이 부분은 구체적인 경험을 추가하면 더 설득력 있을 것 같습니다."
+    Your entire response must be in Korean.`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Please review the following personal statement:\n\n---\n\n${statement}`,
+            config: {
+                systemInstruction,
+                temperature: 0.5,
+            }
+        });
+        return response.text;
+    } catch (error) {
+        console.error("Error getting statement review:", error);
+        return "죄송합니다. AI 검토 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+    }
+};

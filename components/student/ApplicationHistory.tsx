@@ -1,12 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ApplicationData } from '../../types';
+import { ApplicationData, ApplicationStatus } from '../../types';
+
+const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
+
+const STATUS_LABELS: Record<ApplicationStatus, string> = {
+  Applied: '지원 완료',
+  Awarded: '선정',
+  Rejected: '미선정',
+};
+
+const STATUS_STYLES: Record<ApplicationStatus, string> = {
+  Applied: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  Awarded: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  Rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+};
+
+const STATUS_DOT_STYLES: Record<ApplicationStatus, string> = {
+  Applied: 'bg-blue-500',
+  Awarded: 'bg-green-500',
+  Rejected: 'bg-red-500',
+};
 
 const ApplicationHistory: React.FC = () => {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
 
   const loadApplications = useCallback(() => {
     try {
-      const LOCAL_STORAGE_KEY = 'cnu_scholarship_applications';
       const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedApplicationsRaw) {
         const parsedApplications: ApplicationData[] = JSON.parse(storedApplicationsRaw);
@@ -35,15 +54,52 @@ const ApplicationHistory: React.FC = () => {
     };
   }, [loadApplications]);
 
+  const handleStatusChange = (scholarshipId: string, submissionDate: string, newStatus: ApplicationStatus) => {
+    try {
+      const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedApplicationsRaw) {
+        let applications: ApplicationData[] = JSON.parse(storedApplicationsRaw);
+        const appIndex = applications.findIndex(app => app.scholarshipId === scholarshipId && app.submissionDate === submissionDate);
+        if (appIndex !== -1) {
+          applications[appIndex].status = newStatus;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(applications));
+          loadApplications(); // Reload state to reflect the change
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update application status:", error);
+    }
+  };
+
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg p-6">
       <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">나의 지원 이력</h3>
       {applications.length > 0 ? (
-        <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-          {applications.map((app, index) => (
-            <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-3 last:border-b-0">
-              <p className="font-semibold text-gray-800 dark:text-gray-200">{app.scholarshipTitle}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+          {applications.map((app) => (
+            <div key={app.scholarshipId + app.submissionDate} className="border-b border-gray-200 dark:border-gray-700 pb-3 last:border-b-0">
+              <div className="flex justify-between items-center">
+                  <div className="flex items-center min-w-0">
+                    <span className={`w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0 ${STATUS_DOT_STYLES[app.status]}`} title={STATUS_LABELS[app.status]}></span>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200 truncate">{app.scholarshipTitle}</p>
+                  </div>
+                  <div className="relative ml-2">
+                    <select
+                      value={app.status}
+                      onChange={(e) => handleStatusChange(app.scholarshipId, app.submissionDate, e.target.value as ApplicationStatus)}
+                      className={`text-xs font-semibold rounded-full py-1 pl-3 pr-8 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 appearance-none cursor-pointer ${STATUS_STYLES[app.status]}`}
+                      aria-label={`${app.scholarshipTitle} application status`}
+                    >
+                      {Object.keys(STATUS_LABELS).map(statusKey => (
+                        <option key={statusKey} value={statusKey}>{STATUS_LABELS[statusKey as ApplicationStatus]}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                  </div>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 pl-5">
                 지원일: {app.submissionDate}
               </p>
             </div>

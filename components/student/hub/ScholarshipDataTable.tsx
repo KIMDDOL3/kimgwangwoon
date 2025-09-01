@@ -41,12 +41,18 @@ const Th: React.FC<{
 };
 
 const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi }) => {
-  const [filter, setFilter] = useState<ScholarshipCategory | 'All'>('All');
+  const [sourceFilter, setSourceFilter] = useState<'All' | 'Internal' | 'External'>('All');
+  const [categoryFilter, setCategoryFilter] = useState<ScholarshipCategory | 'All'>('All');
+  // As requested, the default sort order is set to 'deadline' in ascending ('asc') order.
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ key: 'deadline', direction: 'asc' });
 
   const filteredScholarships = useMemo(() => {
-    return scholarships.filter(s => filter === 'All' || s.category === filter);
-  }, [scholarships, filter]);
+    return scholarships.filter(s => {
+        const sourceMatch = sourceFilter === 'All' || s.source === sourceFilter;
+        const categoryMatch = categoryFilter === 'All' || s.category === categoryFilter;
+        return sourceMatch && categoryMatch;
+    });
+  }, [scholarships, sourceFilter, categoryFilter]);
 
   const sortedScholarships = useMemo(() => {
     const sortableItems = [...filteredScholarships];
@@ -54,9 +60,12 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
       let aValue: string | Date = a[sortConfig.key];
       let bValue: string | Date = b[sortConfig.key];
 
+      // To ensure chronological accuracy, date strings are handled specifically when sorting by 'deadline'.
       if (sortConfig.key === 'deadline') {
+        // The logic converts date strings (e.g., "2024-12-15") into Date objects before comparison.
         const isADate = !isNaN(new Date(aValue).getTime());
         const isBDate = !isNaN(new Date(bValue).getTime());
+        // Push items with invalid dates to the end of the list.
         if (!isADate) return 1;
         if (!isBDate) return -1;
         aValue = new Date(aValue);
@@ -79,23 +88,50 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
 
   return (
     <div className="w-full">
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          onClick={() => setFilter('All')}
-          className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${filter === 'All' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
-        >
-          전체
-        </button>
-        {Object.entries(SCHOLARSHIP_CATEGORIES).map(([key, { label }]) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key as ScholarshipCategory)}
-            className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${filter === key ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="space-y-4 mb-4">
+        {/* Source Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-sm text-gray-600 dark:text-gray-300 mr-2">구분:</span>
+            <button
+              onClick={() => setSourceFilter('All')}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'All' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => setSourceFilter('Internal')}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'Internal' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+            >
+              교내
+            </button>
+            <button
+              onClick={() => setSourceFilter('External')}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${sourceFilter === 'External' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+            >
+              교외
+            </button>
+        </div>
+        {/* Category Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-sm text-gray-600 dark:text-gray-300 mr-2">유형:</span>
+            <button
+              onClick={() => setCategoryFilter('All')}
+              className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === 'All' ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+            >
+              전체
+            </button>
+            {Object.entries(SCHOLARSHIP_CATEGORIES).map(([key, { label }]) => (
+              <button
+                key={key}
+                onClick={() => setCategoryFilter(key as ScholarshipCategory)}
+                className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${categoryFilter === key ? 'bg-blue-700 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+              >
+                {label}
+              </button>
+            ))}
+        </div>
       </div>
+
 
       <div className="overflow-x-auto relative border border-gray-200 dark:border-gray-700 rounded-lg">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -134,7 +170,7 @@ const ScholarshipDataTable: React.FC<DataTableProps> = ({ scholarships, onAskAi 
           </tbody>
         </table>
       </div>
-       {sortedScholarships.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">해당 카테고리의 장학금이 없습니다.</p>}
+       {sortedScholarships.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">해당 조건의 장학금이 없습니다.</p>}
     </div>
   );
 };
