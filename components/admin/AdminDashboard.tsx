@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // FIX: Corrected import for ApplicationStatus type
-import { User, AllScholarships, ApplicationData, QnaItem, ApplicationStatus } from '../../types';
+import { User, AllScholarships, ApplicationData, QnaItem, ApplicationStatus, CollaborationChannel, ChannelMessage } from '../../types';
 import ScholarshipManagementTable from './ScholarshipManagementTable';
 import ApplicationManagementTable from './ApplicationManagementTable';
 import AutomationTools from './automation/AutomationTools';
@@ -12,6 +12,7 @@ import QnaBoard from './QnaBoard';
 import DashboardHome from './DashboardHome';
 import RpaDashboard from './RpaDashboard';
 import AppBlueprint from './AppBlueprint';
+import CollaborationDashboard from './collaboration/CollaborationDashboard';
 
 interface AdminDashboardProps {
     user: User;
@@ -26,13 +27,23 @@ interface AdminDashboardProps {
     qnaData: QnaItem[];
     onUpdateAnswer: (qnaId: string, answer: string) => void;
     isLoading: boolean;
+    channels: CollaborationChannel[];
+    messages: ChannelMessage[];
+    onCreateChannel: (scholarshipId: string, scholarshipTitle:string) => CollaborationChannel | undefined;
+    onAddChannelMessage: (channelId: string, text: string) => void;
 }
 
-export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat' | 'blueprint';
+export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'collaboration' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat' | 'blueprint';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
-    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer, isLoading } = props;
+    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer, isLoading, channels, messages, onCreateChannel, onAddChannelMessage } = props;
     const [view, setView] = useState<AdminView>('home');
+    const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
+
+    const handleNavigateToChannel = (channelId: string) => {
+        setSelectedChannelId(channelId);
+        setView('collaboration');
+    };
 
     // FIX: Made `targetView` and `icon` props optional to support section headers, resolving a TypeScript error.
     const NavLink: React.FC<{
@@ -65,13 +76,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
     const renderContent = () => {
         switch(view) {
             case 'home':
-                return <DashboardHome scholarships={scholarships} applicationData={applicationData} qnaData={qnaData} setView={setView} />;
+                return <DashboardHome scholarships={scholarships} applicationData={applicationData} qnaData={qnaData} setView={setView} channels={channels} />;
             case 'scholarships':
-                return <ScholarshipManagementTable isLoading={isLoading} scholarships={scholarships} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onPushNotification={onPushNotification} />;
+                return <ScholarshipManagementTable 
+                    isLoading={isLoading} 
+                    scholarships={scholarships} 
+                    onAdd={onAdd} 
+                    onUpdate={onUpdate} 
+                    onDelete={onDelete} 
+                    onPushNotification={onPushNotification}
+                    channels={channels}
+                    onCreateChannel={onCreateChannel}
+                    onNavigateToChannel={handleNavigateToChannel}
+                />;
             case 'applications':
                 return <ApplicationManagementTable isLoading={isLoading} applications={applicationData} onUpdateStatus={onUpdateStatus} />;
             case 'qna':
                 return <QnaBoard qnaItems={qnaData} onSaveAnswer={onUpdateAnswer} />;
+            case 'collaboration':
+                return <CollaborationDashboard
+                    user={user}
+                    channels={channels}
+                    messages={messages}
+                    onAddMessage={onAddChannelMessage}
+                    selectedChannelId={selectedChannelId}
+                    onSelectChannel={setSelectedChannelId}
+                />;
             case 'automation':
                 return <AutomationTools />;
             case 'rpa':
@@ -105,6 +135,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
                     <NavLink targetView="scholarships" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fillRule="evenodd" d="M4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h.01a1 1 0 100-2H10zm3 0a1 1 0 000 2h.01a1 1 0 100-2H13z" clipRule="evenodd" /></svg>} label="장학금 관리" />
                     <NavLink targetView="applications" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.255 0 2.443-.29 3.5-.804V4.804zM14.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 0114.5 16c1.255 0 2.443-.29 3.5-.804V4.804A7.968 7.968 0 0014.5 4z" /></svg>} label="신청서 관리" subLabel={`${applicationData.length}`} />
                     <NavLink targetView="qna" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.083-3.083A7.002 7.002 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.75 9.25a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z" clipRule="evenodd" /></svg>} label="Q&A 관리" subLabel={`${qnaData.filter(q => q.status === 'Unanswered').length}`} />
+                    <NavLink targetView="collaboration" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h7a2 2 0 002-2V9a2 2 0 00-2-2h-1z" /></svg>} label="업무 소통 채널" subLabel={`${channels.length}`} />
                     
                     <NavLink isSection label="Tools & Automation" />
                     <NavLink targetView="rpa" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>} label="RPA 대시보드" />

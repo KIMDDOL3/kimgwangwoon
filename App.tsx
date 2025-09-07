@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback, useEffect } from "react";
 import LoginScreen from "./components/LoginScreen";
 import StudentDashboard from "./components/student/StudentDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 // FIX: Corrected import path for types
-import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem } from "./types";
+import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem, CollaborationChannel, ChannelMessage } from "./types";
 import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_ADMIN_USER, MOCK_STUDENT_USER } from "./constants";
 import { MOCK_QNA_DATA } from "./components/admin/qnaData";
 const App: React.FC = () => {
@@ -13,6 +14,8 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [applicationData, setApplicationData] = useState<ApplicationData[]>([]);
     const [qnaData, setQnaData] = useState<QnaItem[]>([]);
+    const [channels, setChannels] = useState<CollaborationChannel[]>([]);
+    const [messages, setMessages] = useState<ChannelMessage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const loadDataFromLocalStorage = useCallback((key: string, setter: Function, initialData: any[] = []) => {
         try {
@@ -36,6 +39,8 @@ const App: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
             loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
+            loadDataFromLocalStorage('jnu_collab_channels', setChannels);
+            loadDataFromLocalStorage('jnu_collab_messages', setMessages);
             setIsLoading(false);
         };
         loadInitialData();
@@ -46,10 +51,18 @@ const App: React.FC = () => {
             if (e.key === 'jnu_qna_items') {
                 loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
             }
+             if (e.key === 'jnu_collab_channels') {
+                loadDataFromLocalStorage('jnu_collab_channels', setChannels);
+            }
+            if (e.key === 'jnu_collab_messages') {
+                loadDataFromLocalStorage('jnu_collab_messages', setMessages);
+            }
         };
         const handleCustomEvent = () => {
             loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
+            loadDataFromLocalStorage('jnu_collab_channels', setChannels);
+            loadDataFromLocalStorage('jnu_collab_messages', setMessages);
         };
         window.addEventListener('storage', handleStorageChange);
         window.addEventListener('dataChanged', handleCustomEvent);
@@ -92,6 +105,43 @@ const App: React.FC = () => {
         setQnaData(updatedQnaData);
         window.dispatchEvent(new CustomEvent('dataChanged'));
     };
+
+    const handleCreateChannel = (scholarshipId: string, scholarshipTitle: string): CollaborationChannel | undefined => {
+        const existingChannel = channels.find(c => c.scholarshipId === scholarshipId);
+        if (existingChannel) {
+            alert('이 장학금에 대한 채널은 이미 존재합니다.');
+            return existingChannel;
+        }
+
+        const newChannel: CollaborationChannel = {
+            id: `chan-${scholarshipId}`,
+            scholarshipId,
+            scholarshipTitle,
+            createdAt: new Date().toISOString(),
+        };
+        const updatedChannels = [...channels, newChannel];
+        localStorage.setItem('jnu_collab_channels', JSON.stringify(updatedChannels));
+        setChannels(updatedChannels);
+        window.dispatchEvent(new CustomEvent('dataChanged'));
+        return newChannel;
+    };
+
+    const handleAddChannelMessage = (channelId: string, text: string) => {
+        if (!user) return;
+        const newMessage: ChannelMessage = {
+            id: `msg-${Date.now()}`,
+            channelId,
+            senderId: user.id,
+            senderName: user.name,
+            text,
+            timestamp: new Date().toISOString(),
+        };
+        const updatedMessages = [...messages, newMessage];
+        localStorage.setItem('jnu_collab_messages', JSON.stringify(updatedMessages));
+        setMessages(updatedMessages);
+        window.dispatchEvent(new CustomEvent('dataChanged'));
+    };
+
     const handleRoleSelect = (selectedRole: Role) => {
         if (selectedRole === 'student') {
             setUser(MOCK_STUDENT_USER);
@@ -140,7 +190,24 @@ const App: React.FC = () => {
             return (<StudentDashboard isLoading={isLoading} user={user} onLogout={handleLogout} allScholarships={scholarships} notifications={notifications} onDismissNotification={handleDismissNotification} onDismissAllNotifications={handleDismissAllNotifications} qnaData={qnaData.filter(q => q.studentId === user.universityId)} onAddQuestion={handleAddQuestion}/>);
         }
         if (role === 'admin') {
-            return (<AdminDashboard isLoading={isLoading} user={user} onLogout={handleLogout} scholarships={scholarships} onAdd={handleAddScholarship} onUpdate={handleUpdateScholarship} onDelete={handleDeleteScholarship} onPushNotification={handlePushNotification} applicationData={applicationData} onUpdateStatus={handleUpdateApplicationStatus} qnaData={qnaData} onUpdateAnswer={handleUpdateAnswer}/>);
+            return (<AdminDashboard 
+                isLoading={isLoading} 
+                user={user} 
+                onLogout={handleLogout} 
+                scholarships={scholarships} 
+                onAdd={handleAddScholarship} 
+                onUpdate={handleUpdateScholarship} 
+                onDelete={handleDeleteScholarship} 
+                onPushNotification={handlePushNotification} 
+                applicationData={applicationData} 
+                onUpdateStatus={handleUpdateApplicationStatus} 
+                qnaData={qnaData} 
+                onUpdateAnswer={handleUpdateAnswer}
+                channels={channels}
+                messages={messages}
+                onCreateChannel={handleCreateChannel}
+                onAddChannelMessage={handleAddChannelMessage}
+            />);
         }
     };
     return (<div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans">

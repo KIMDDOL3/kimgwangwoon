@@ -126,3 +126,19 @@ export interface InternationalStudent {
   passportNo: string;
   program: string;
 }
+
+export interface CollaborationChannel {
+    id: string; // e.g., 'chan-s001'
+    scholarshipId: string;
+    scholarshipTitle: string;
+    createdAt: string;
+}
+
+export interface ChannelMessage {
+    id:string; // e.g., 'msg-timestamp'
+    channelId: string;
+    senderId: string; // admin user id
+    senderName: string; // admin user name
+    text: string;
+    timestamp: string; // ISO string
+}

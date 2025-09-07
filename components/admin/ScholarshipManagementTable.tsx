@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 // FIX: Corrected import paths
-import { AllScholarships } from '../../types';
+import { AllScholarships, CollaborationChannel } from '../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../constants';
 import ScholarshipFormModal from './ScholarshipFormModal';
 import PushNotificationModal from './PushNotificationModal'; // New import
@@ -13,6 +14,9 @@ interface ManagementTableProps {
   onDelete: (scholarshipId: string) => void;
   onPushNotification: (scholarship: AllScholarships, message: string) => void; // Updated signature
   isLoading: boolean;
+  channels: CollaborationChannel[];
+  onCreateChannel: (scholarshipId: string, scholarshipTitle:string) => CollaborationChannel | undefined;
+  onNavigateToChannel: (channelId: string) => void;
 }
 
 const SkeletonRow: React.FC = () => (
@@ -30,7 +34,7 @@ const SkeletonRow: React.FC = () => (
     </tr>
 );
 
-const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarships, onAdd, onUpdate, onDelete, onPushNotification, isLoading }) => {
+const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarships, onAdd, onUpdate, onDelete, onPushNotification, isLoading, channels, onCreateChannel, onNavigateToChannel }) => {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingScholarship, setEditingScholarship] = useState<AllScholarships | null>(null);
     
@@ -78,6 +82,16 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
         }
         handleClosePushModal();
     };
+    
+    const handleChannelAction = (scholarship: AllScholarships) => {
+        let channel = channels.find(c => c.scholarshipId === scholarship.id);
+        if (!channel) {
+            channel = onCreateChannel(scholarship.id, scholarship.title);
+        }
+        if (channel) {
+            onNavigateToChannel(channel.id);
+        }
+    };
 
     return (
         <>
@@ -103,6 +117,7 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
                             <th scope="col" className="px-6 py-3">마감일</th>
                             <th scope="col" className="px-6 py-3">관리</th>
                             <th scope="col" className="px-6 py-3">알림</th>
+                            <th scope="col" className="px-6 py-3">업무 채널</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,6 +141,15 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
                                         <Button onClick={() => handleOpenPushModal(s)} variant="primary" title={`'${s.title}' 알림 보내기`}>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
                                             Push
+                                        </Button>
+                                    </td>
+                                     <td className="px-6 py-4">
+                                        <Button
+                                            onClick={() => handleChannelAction(s)}
+                                            variant="secondary"
+                                            className="text-xs py-1.5 px-3"
+                                        >
+                                            {channels.some(c => c.scholarshipId === s.id) ? '채널 보기' : '채널 생성'}
                                         </Button>
                                     </td>
                                 </tr>

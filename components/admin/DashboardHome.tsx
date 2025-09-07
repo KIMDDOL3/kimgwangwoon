@@ -1,5 +1,5 @@
 import React from 'react';
-import { AllScholarships, ApplicationData, QnaItem } from '../../types';
+import { AllScholarships, ApplicationData, QnaItem, CollaborationChannel } from '../../types';
 import { AdminView } from './AdminDashboard';
 import Card from '../ui/Card';
 import AdminStats from './AdminStats';
@@ -10,6 +10,7 @@ interface DashboardHomeProps {
     scholarships: AllScholarships[];
     applicationData: ApplicationData[];
     qnaData: QnaItem[];
+    channels: CollaborationChannel[];
     setView: (view: AdminView) => void;
 }
 
@@ -31,7 +32,7 @@ const QuickLink: React.FC<{
 );
 
 
-const DashboardHome: React.FC<DashboardHomeProps> = ({ scholarships, applicationData, qnaData, setView }) => {
+const DashboardHome: React.FC<DashboardHomeProps> = ({ scholarships, applicationData, qnaData, channels, setView }) => {
 
     const unansweredQna = qnaData.filter(q => q.status === 'Unanswered').length;
     const pendingApplications = applicationData.filter(a => a.status === 'Applied').length;
@@ -71,6 +72,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ scholarships, application
                             value={`${unansweredQna}개의 미답변 질문`}
                             icon={<div className="p-3 bg-amber-100 dark:bg-amber-900/50 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600 dark:text-amber-300" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.083-3.083A7.002 7.002 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.75 9.25a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5z" clipRule="evenodd" /></svg></div>}
                             onClick={() => setView('qna')}
+                        />
+                        <QuickLink
+                            title="업무 소통 채널"
+                            value={`${channels.length}개의 채널 활성 중`}
+                            icon={<div className="p-3 bg-violet-100 dark:bg-violet-900/50 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600 dark:text-violet-300" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h7a2 2 0 002-2V9a2 2 0 00-2-2h-1z" /></svg></div>}
+                            onClick={() => setView('collaboration')}
                         />
                     </div>
                 </Card>
