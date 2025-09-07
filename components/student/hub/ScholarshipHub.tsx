@@ -4,21 +4,18 @@ import { AllScholarships, ApplicationData, User } from '../../../types';
 import ScholarshipDistributionChart from './ScholarshipDistributionChart';
 import ScholarshipDataTable from './ScholarshipDataTable';
 import ApplicationModal from '../ApplicationModal';
-import { MOCK_USER } from '../../../constants'; // Assuming MOCK_USER is a stand-in for the logged-in user.
 
 interface ScholarshipHubProps {
+  user: User;
   onBack: () => void;
   onAskAi: (scholarshipTitle: string) => void;
   allScholarships: AllScholarships[];
 }
 
-const ScholarshipHub: React.FC<ScholarshipHubProps> = ({ onBack, onAskAi, allScholarships }) => {
+const ScholarshipHub: React.FC<ScholarshipHubProps> = ({ user, onBack, onAskAi, allScholarships }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedScholarship, setSelectedScholarship] = useState<AllScholarships | null>(null);
   
-  // In a real app, the user object would be passed down as a prop.
-  const user = MOCK_USER; 
-
   const handleApplyClick = (scholarship: AllScholarships) => {
     setSelectedScholarship(scholarship);
     setIsModalOpen(true);

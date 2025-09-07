@@ -1,14 +1,10 @@
-
-
-
-
 import React, { useState, useCallback, useEffect } from "react";
 import LoginScreen from "./components/LoginScreen";
 import StudentDashboard from "./components/student/StudentDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 // FIX: Corrected import path for types
 import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem } from "./types";
-import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_USER } from "./constants";
+import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_ADMIN_USER, MOCK_STUDENT_USER } from "./constants";
 import { MOCK_QNA_DATA } from "./components/admin/qnaData";
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -91,7 +87,11 @@ const App: React.FC = () => {
         window.dispatchEvent(new CustomEvent('dataChanged'));
     };
     const handleRoleSelect = (selectedRole: Role) => {
-        setUser(MOCK_USER);
+        if (selectedRole === 'student') {
+            setUser(MOCK_STUDENT_USER);
+        } else {
+            setUser(MOCK_ADMIN_USER);
+        }
         setRole(selectedRole);
     };
     const handleLogout = () => {

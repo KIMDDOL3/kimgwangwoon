@@ -36,7 +36,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
       text: messageText,
       sender: 'user',
     };
-    setMessages(prev => [...prev, userMessage]);
+    
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
 
@@ -56,7 +58,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
     };
     
     const internalScholarships = allScholarships.filter(s => s.source === 'Internal');
-    const ragResponse = await getChatbotResponse(messageText, internalScholarships, onStatusUpdate);
+    const ragResponse = await getChatbotResponse(messageText, newMessages, internalScholarships, onStatusUpdate);
 
     const botMessage: ChatMessage = {
       id: Date.now().toString() + '-bot',
@@ -69,7 +71,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
     setMessages(prev => [...prev, botMessage]);
     setIsLoading(false);
     setLoadingText('답변을 생성 중입니다...');
-  }, [isLoading, loadingText, allScholarships]);
+  }, [isLoading, loadingText, allScholarships, messages]);
 
   useEffect(() => {
     if (initialPrompt && !isLoading) {

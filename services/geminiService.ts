@@ -1,6 +1,5 @@
-
 import { GoogleGenAI } from "@google/genai";
-import { AllScholarships, ExternalScholarship } from "../types";
+import { AllScholarships, ChatMessage, ExternalScholarship } from "../types";
 import { searchExternalScholarships } from "./externalScholarshipService";
 
 // According to guidelines, initialize with apiKey from environment variable.
@@ -8,7 +7,12 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 const RAG_PROMPT_TEMPLATE = `You are a helpful and friendly AI assistant for students at Chonnam National University. Your goal is to provide accurate and relevant information about scholarships.
 
-CONTEXT:
+CONVERSATION HISTORY:
+---
+{conversation_history}
+---
+
+CONTEXT FOR THE CURRENT QUESTION:
 Here is a list of available scholarships with their descriptions and requirements. Use this information to answer the user's question.
 ---
 {scholarship_context}
@@ -22,7 +26,7 @@ If the user's question is about external scholarships (e.g., from foundations li
 If the context does not contain the answer, state that you don't have enough information but can answer questions about the provided scholarships. Do not make up information.
 If the question is a general greeting or not related to scholarships, provide a friendly and helpful response.
 
-QUESTION:
+CURRENT QUESTION:
 {user_question}
 
 ANSWER:
@@ -33,6 +37,7 @@ ANSWER:
  */
 export const getChatbotResponse = async (
   query: string,
+  history: ChatMessage[],
   internalScholarships: AllScholarships[],
   onStatusUpdate: (status: string) => void
 ): Promise<{ answer: string; sources: (AllScholarships | ExternalScholarship)[] }> => {
@@ -67,8 +72,14 @@ export const getChatbotResponse = async (
 
     const scholarshipContext = sources.map(s => `Title: ${s.title}\nSummary: ${s.summary}`).join('\n\n');
     const externalContext = externalSources.map(s => `Title: ${s.title}\nFoundation: ${s.foundation}\nSummary: ${s.summary}`).join('\n\n');
+    
+    const historyText = history.map(m => {
+        return `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text || ''}`;
+    }).join('\n');
+
 
     const finalPrompt = RAG_PROMPT_TEMPLATE
+      .replace('{conversation_history}', historyText || 'No conversation history yet.')
       .replace('{scholarship_context}', scholarshipContext || 'No internal scholarship information available.')
       .replace('{external_scholarship_context}', externalContext || 'No external scholarship information available.')
       .replace('{user_question}', query);

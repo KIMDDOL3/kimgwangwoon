@@ -47,7 +47,8 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ scholarships, application
                 </p>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                {/* Left Column */}
                 <Card>
                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                         <span className="text-gradient-aurora">주요 업무 바로가기</span>
@@ -73,15 +74,16 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ scholarships, application
                         />
                     </div>
                 </Card>
-                <div>
+
+                {/* Right Column */}
+                <div className="space-y-8">
                     <AdminStats scholarships={scholarships} />
+                    <WeeklyAutomationLog />
                 </div>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <ApplicationStats applications={applicationData} />
-                <WeeklyAutomationLog />
-            </div>
+            
+            <ApplicationStats applications={applicationData} />
+            
         </div>
     );
 };

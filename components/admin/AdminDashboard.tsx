@@ -12,6 +12,7 @@ import AdminChatInterface from './chat/AdminChatInterface';
 import QnaBoard from './QnaBoard';
 import DashboardHome from './DashboardHome';
 import RpaDashboard from './RpaDashboard';
+import AppBlueprint from './AppBlueprint';
 
 interface AdminDashboardProps {
     user: User;
@@ -27,7 +28,7 @@ interface AdminDashboardProps {
     onUpdateAnswer: (qnaId: string, answer: string) => void;
 }
 
-export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat';
+export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat' | 'blueprint';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
     const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer } = props;
@@ -81,6 +82,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
                  return <InternationalAffairsDashboard />;
             case 'chat':
                  return <AdminChatInterface />;
+            case 'blueprint':
+                 return <AppBlueprint />;
             default:
                 return <div>페이지를 찾을 수 없습니다.</div>
         }
@@ -109,6 +112,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
                     <NavLink targetView="student-lookup" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>} label="학생 조회" />
                     <NavLink targetView="international" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z" /><path d="M12.586 5.586a2 2 0 012.828 0 2 2 0 010 2.828l-3 3a2 2 0 01-2.828 0 2 2 0 010-2.828l3-3zM8.414 11.586a2 2 0 01-2.828 0 2 2 0 010-2.828l3-3a2 2 0 012.828 0 2 2 0 010 2.828l-3 3z" /></svg>} label="국제협력과" />
                     <NavLink targetView="chat" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" /><path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h7a2 2 0 002-2V9a2 2 0 00-2-2h-1z" /></svg>} label="AI 업무 매뉴얼" />
+
+                    <NavLink isSection label="앱 정보" />
+                    <NavLink 
+                        targetView="blueprint" 
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 5.943 7.523 4 10 4c2.477 0 6.268 1.943 9.542 6-3.274 4.057-7.065 6-9.542 6S3.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>}
+                        label="앱 설계도 및 워크플로우" 
+                    />
                 </nav>
 
                 <div className="mt-auto">

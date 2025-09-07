@@ -1,14 +1,20 @@
-
-
 // FIX: Corrected import path for types
 import { AllScholarships, User, DiagnosticQuestion, ScholarshipCategory } from './types';
 
-export const MOCK_USER: User = {
+export const MOCK_STUDENT_USER: User = {
   id: 'user-123',
   name: '김광운',
   universityId: '202101234',
   department: '인공지능융합학과',
   year: 3,
+};
+
+export const MOCK_ADMIN_USER: User = {
+  id: 'admin-001',
+  name: '김광운',
+  universityId: 'staff-001',
+  department: '학생과',
+  year: 0, // Not applicable for admin
 };
 
 export const SCHOLARSHIP_CATEGORIES: Record<ScholarshipCategory, { label: string; color: string; className: string; }> = {

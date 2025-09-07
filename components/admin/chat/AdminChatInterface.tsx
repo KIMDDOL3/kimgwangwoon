@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import Card from '../../ui/Card';
@@ -62,19 +61,29 @@ const AdminChatInterface: React.FC = () => {
 
     const userMessage: ChatMessage = { id: Date.now().toString(), text: inputValue, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
+    const currentMessages = [...messages, userMessage];
     setInputValue('');
     setIsLoading(true);
 
     const relevantManuals = findRelevantManualEntries(inputValue);
     
+    const historyText = currentMessages.map(m => 
+        `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`
+    ).join('\n');
+
     const ragPrompt = `You are an AI assistant for university staff, providing answers based on an internal administrative manual. Use the provided context to answer the user's question accurately.
 
-CONTEXT:
+CONVERSATION HISTORY:
+---
+${historyText}
+---
+
+CONTEXT FOR THE CURRENT QUESTION:
 ---
 ${relevantManuals.map(m => `Q: ${m.question}\nA: ${m.answer}`).join('\n---\n')}
 ---
 
-QUESTION:
+CURRENT QUESTION:
 ${inputValue}
 
 Based *only* on the context provided, answer the user's question in Korean. If the context does not contain the answer, state that the information is not in the manual and you cannot answer.

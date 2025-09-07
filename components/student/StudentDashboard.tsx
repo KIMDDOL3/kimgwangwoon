@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 // FIX: Corrected import path
 import { User, AllScholarships, AppNotification, QnaItem } from '../../types';
@@ -35,7 +34,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
         setView('dashboard');
     };
     if (view === 'hub') {
-        return <ScholarshipHub onBack={() => handleNavigateTo('dashboard')} onAskAi={handleAskAi} allScholarships={allScholarships}/>;
+        return <ScholarshipHub user={user} onBack={() => handleNavigateTo('dashboard')} onAskAi={handleAskAi} allScholarships={allScholarships}/>;
     }
     if (view === 'qna') {
         return <StudentQnaBoard user={user} qnaData={qnaData} onAddQuestion={onAddQuestion} onBack={() => handleNavigateTo('dashboard')}/>;
