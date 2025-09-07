@@ -11,7 +11,30 @@ const notices = [
   { id: 4, title: '2025학년도 1학기 생활지원 장학금 신청 안내', date: '2025.08.25' },
 ];
 
-const JnuNoticeCard: React.FC = () => {
+const SkeletonLoader: React.FC = () => (
+    <Card>
+        <div className="flex justify-between items-center mb-4">
+            <div className="h-7 w-48 rounded skeleton-loader"></div>
+            <div className="h-9 w-20 rounded-lg skeleton-loader"></div>
+        </div>
+        <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                    <div className="flex justify-between items-center gap-4">
+                        <div className="h-5 w-3/4 rounded skeleton-loader"></div>
+                        <div className="h-4 w-1/5 rounded skeleton-loader"></div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </Card>
+);
+
+const JnuNoticeCard: React.FC<{ isLoading: boolean }> = ({ isLoading }) => {
+  if (isLoading) {
+      return <SkeletonLoader />;
+  }
+
   return (
     <Card>
         <div className="flex justify-between items-center mb-4">

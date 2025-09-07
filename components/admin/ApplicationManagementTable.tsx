@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 // FIX: Corrected import path
 import { ApplicationData, ApplicationStatus } from '../../types';
@@ -6,6 +5,7 @@ import { ApplicationData, ApplicationStatus } from '../../types';
 interface ApplicationManagementTableProps {
   applications: ApplicationData[];
   onUpdateStatus: (userId: string, scholarshipId: string, submissionDate: string, newStatus: ApplicationStatus) => void;
+  isLoading: boolean;
 }
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
@@ -20,7 +20,17 @@ const STATUS_STYLES: Record<ApplicationStatus, string> = {
   Rejected: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
 };
 
-const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({ applications, onUpdateStatus }) => {
+const SkeletonRow: React.FC = () => (
+    <tr className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50">
+        <td className="px-6 py-4"><div className="h-4 w-24 rounded skeleton-loader"></div></td>
+        <td className="px-6 py-4"><div className="h-4 w-32 rounded skeleton-loader"></div></td>
+        <td className="px-6 py-4"><div className="h-4 w-20 rounded skeleton-loader"></div></td>
+        <td className="px-6 py-4"><div className="h-4 w-28 rounded skeleton-loader"></div></td>
+        <td className="px-6 py-4"><div className="h-8 w-24 rounded-md skeleton-loader"></div></td>
+    </tr>
+);
+
+const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({ applications, onUpdateStatus, isLoading }) => {
     const [scholarshipFilter, setScholarshipFilter] = useState<string>('All');
 
     const scholarshipOptions = useMemo(() => {
@@ -49,6 +59,7 @@ const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({
                         value={scholarshipFilter}
                         onChange={(e) => setScholarshipFilter(e.target.value)}
                         className="rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                        disabled={isLoading}
                     >
                         {scholarshipOptions.map(title => (
                             <option key={title} value={title}>
@@ -71,37 +82,41 @@ const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredApplications.map(app => (
-                            <tr key={`${app.userId}-${app.scholarshipId}-${app.submissionDate}`} className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50 hover:bg-white/70 dark:hover:bg-gray-900/40">
-                                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{app.userName}</td>
-                                <td className="px-6 py-4">{app.scholarshipTitle}</td>
-                                <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                                    {app.fileName ? (
-                                        <div className="flex items-center gap-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
-                                            <span className="truncate" title={app.fileName}>{app.fileName}</span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-gray-400 italic">없음</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 font-mono">{app.submissionDate}</td>
-                                <td className="px-6 py-4">
-                                    <select
-                                        value={app.status}
-                                        onChange={(e) => onUpdateStatus(app.userId, app.scholarshipId, app.submissionDate, e.target.value as ApplicationStatus)}
-                                        className={`text-xs font-semibold rounded-md py-1.5 pl-3 pr-8 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 appearance-none cursor-pointer ${STATUS_STYLES[app.status]}`}
-                                    >
-                                        {STATUS_OPTIONS.map(option => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
-                                </td>
-                            </tr>
-                        ))}
+                        {isLoading ? (
+                            Array.from({ length: 5 }).map((_, index) => <SkeletonRow key={index} />)
+                        ) : (
+                            filteredApplications.map(app => (
+                                <tr key={`${app.userId}-${app.scholarshipId}-${app.submissionDate}`} className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50 hover:bg-white/70 dark:hover:bg-gray-900/40">
+                                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{app.userName}</td>
+                                    <td className="px-6 py-4">{app.scholarshipTitle}</td>
+                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                                        {app.fileName ? (
+                                            <div className="flex items-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
+                                                <span className="truncate" title={app.fileName}>{app.fileName}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 italic">없음</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 font-mono">{app.submissionDate}</td>
+                                    <td className="px-6 py-4">
+                                        <select
+                                            value={app.status}
+                                            onChange={(e) => onUpdateStatus(app.userId, app.scholarshipId, app.submissionDate, e.target.value as ApplicationStatus)}
+                                            className={`text-xs font-semibold rounded-md py-1.5 pl-3 pr-8 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 appearance-none cursor-pointer ${STATUS_STYLES[app.status]}`}
+                                        >
+                                            {STATUS_OPTIONS.map(option => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
-                 {filteredApplications.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">선택한 조건에 맞는 지원서가 없습니다.</p>}
+                 {!isLoading && filteredApplications.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">선택한 조건에 맞는 지원서가 없습니다.</p>}
             </div>
         </div>
     );

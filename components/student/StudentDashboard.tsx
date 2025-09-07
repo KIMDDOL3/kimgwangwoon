@@ -22,9 +22,10 @@ interface StudentDashboardProps {
     onDismissAllNotifications: () => void;
     qnaData: QnaItem[];
     onAddQuestion: (newQuestion: Omit<QnaItem, 'id' | 'date' | 'status'>) => void;
+    isLoading: boolean;
 }
 type StudentView = 'dashboard' | 'hub' | 'qna';
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, allScholarships, notifications, onDismissNotification, onDismissAllNotifications, qnaData, onAddQuestion }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, allScholarships, notifications, onDismissNotification, onDismissAllNotifications, qnaData, onAddQuestion, isLoading }) => {
     const [view, setView] = useState<StudentView>('dashboard');
     const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
     const handleNavigateTo = (targetView: StudentView) => setView(targetView);
@@ -71,7 +72,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
             </a>
             
             {/* JNU Notice Card */}
-            <JnuNoticeCard />
+            <JnuNoticeCard isLoading={isLoading} />
             
             {/* Main Dashboard Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -80,7 +81,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
                 <NationalScholarshipCard allScholarships={allScholarships} onAskAi={handleAskAi}/>
                 <GpaSearchCard allScholarships={allScholarships} onAskAi={handleAskAi}/>
                 <ScholarshipHubPreview onNavigate={() => handleNavigateTo('hub')} allScholarships={allScholarships}/>
-                <ApplicationHistory />
+                <ApplicationHistory isLoading={isLoading} />
                 <QnaCard onNavigate={() => handleNavigateTo('qna')} qnaData={qnaData}/>
               </div>
 

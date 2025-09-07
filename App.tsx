@@ -13,6 +13,7 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [applicationData, setApplicationData] = useState<ApplicationData[]>([]);
     const [qnaData, setQnaData] = useState<QnaItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const loadDataFromLocalStorage = useCallback((key: string, setter: Function, initialData: any[] = []) => {
         try {
             const storedData = localStorage.getItem(key);
@@ -31,8 +32,13 @@ const App: React.FC = () => {
         }
     }, []);
     useEffect(() => {
-        loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
-        loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
+        const loadInitialData = async () => {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
+            loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
+            setIsLoading(false);
+        };
+        loadInitialData();
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === 'jnu_scholarship_applications') {
                 loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
@@ -131,10 +137,10 @@ const App: React.FC = () => {
             return <LoginScreen onRoleSelect={handleRoleSelect}/>;
         }
         if (role === 'student') {
-            return (<StudentDashboard user={user} onLogout={handleLogout} allScholarships={scholarships} notifications={notifications} onDismissNotification={handleDismissNotification} onDismissAllNotifications={handleDismissAllNotifications} qnaData={qnaData.filter(q => q.studentId === user.universityId)} onAddQuestion={handleAddQuestion}/>);
+            return (<StudentDashboard isLoading={isLoading} user={user} onLogout={handleLogout} allScholarships={scholarships} notifications={notifications} onDismissNotification={handleDismissNotification} onDismissAllNotifications={handleDismissAllNotifications} qnaData={qnaData.filter(q => q.studentId === user.universityId)} onAddQuestion={handleAddQuestion}/>);
         }
         if (role === 'admin') {
-            return (<AdminDashboard user={user} onLogout={handleLogout} scholarships={scholarships} onAdd={handleAddScholarship} onUpdate={handleUpdateScholarship} onDelete={handleDeleteScholarship} onPushNotification={handlePushNotification} applicationData={applicationData} onUpdateStatus={handleUpdateApplicationStatus} qnaData={qnaData} onUpdateAnswer={handleUpdateAnswer}/>);
+            return (<AdminDashboard isLoading={isLoading} user={user} onLogout={handleLogout} scholarships={scholarships} onAdd={handleAddScholarship} onUpdate={handleUpdateScholarship} onDelete={handleDeleteScholarship} onPushNotification={handlePushNotification} applicationData={applicationData} onUpdateStatus={handleUpdateApplicationStatus} qnaData={qnaData} onUpdateAnswer={handleUpdateAnswer}/>);
         }
     };
     return (<div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans">

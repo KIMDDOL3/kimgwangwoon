@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 // FIX: Corrected import for ApplicationStatus type
 import { User, AllScholarships, ApplicationData, QnaItem, ApplicationStatus } from '../../types';
@@ -26,12 +25,13 @@ interface AdminDashboardProps {
     onUpdateStatus: (userId: string, scholarshipId: string, submissionDate: string, newStatus: ApplicationStatus) => void;
     qnaData: QnaItem[];
     onUpdateAnswer: (qnaId: string, answer: string) => void;
+    isLoading: boolean;
 }
 
 export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat' | 'blueprint';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
-    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer } = props;
+    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer, isLoading } = props;
     const [view, setView] = useState<AdminView>('home');
 
     // FIX: Made `targetView` and `icon` props optional to support section headers, resolving a TypeScript error.
@@ -67,9 +67,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
             case 'home':
                 return <DashboardHome scholarships={scholarships} applicationData={applicationData} qnaData={qnaData} setView={setView} />;
             case 'scholarships':
-                return <ScholarshipManagementTable scholarships={scholarships} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onPushNotification={onPushNotification} />;
+                return <ScholarshipManagementTable isLoading={isLoading} scholarships={scholarships} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} onPushNotification={onPushNotification} />;
             case 'applications':
-                return <ApplicationManagementTable applications={applicationData} onUpdateStatus={onUpdateStatus} />;
+                return <ApplicationManagementTable isLoading={isLoading} applications={applicationData} onUpdateStatus={onUpdateStatus} />;
             case 'qna':
                 return <QnaBoard qnaItems={qnaData} onSaveAnswer={onUpdateAnswer} />;
             case 'automation':
