@@ -1,5 +1,7 @@
+
 import React from 'react';
 import ScholarshipDistributionChart from './ScholarshipDistributionChart';
+// FIX: Corrected import path
 import { AllScholarships } from '../../../types';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';

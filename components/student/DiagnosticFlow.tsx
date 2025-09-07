@@ -18,9 +18,8 @@ const DiagnosticFlow: React.FC<DiagnosticFlowProps> = ({ questions, onComplete, 
   const currentQuestion = questions[currentQuestionIndex];
 
   useEffect(() => {
-    // Prefill input for number-input if answer exists
-    const answer = answers[currentQuestion.key];
-    if (currentQuestion.type === 'number-input' && answer) {
+    const answer = currentQuestion ? answers[currentQuestion.key] : undefined;
+    if (currentQuestion && currentQuestion.type === 'number-input' && answer) {
         setInputValue(String(answer));
     } else {
         setInputValue('');
@@ -46,6 +45,8 @@ const DiagnosticFlow: React.FC<DiagnosticFlowProps> = ({ questions, onComplete, 
     }
   };
 
+  if (!currentQuestion) return null;
+
   return (
     <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg animate-fade-in-up">
       <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-white">{currentQuestion.text}</h3>
@@ -53,7 +54,7 @@ const DiagnosticFlow: React.FC<DiagnosticFlowProps> = ({ questions, onComplete, 
         <div className="flex flex-col space-y-2">
           {currentQuestion.options?.map((option) => (
             <button
-              key={option.value}
+              key={option.value.toString()}
               onClick={() => handleAnswer(option.value)}
               className="w-full text-left p-3 bg-gray-100 dark:bg-gray-600 hover:bg-blue-100 dark:hover:bg-blue-600 rounded-lg transition-colors"
             >

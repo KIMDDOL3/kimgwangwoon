@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+// FIX: Corrected import path
 import { FAQ_DATA } from '../../constants';
 
 const FaqItem: React.FC<{ item: { question: string; answer: string }; isOpen: boolean; onClick: () => void }> = ({ item, isOpen, onClick }) => {

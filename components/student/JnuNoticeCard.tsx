@@ -2,21 +2,23 @@ import React from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 
-const JNU_NOTICE_URL = 'https://www.jnu.ac.kr/WebApp/web/HOM/COM/Board/board.aspx?boardID=5&cate=5';
+const SCHOLARSHIP_NOTICE_URL = 'https://www.jnu.ac.kr/WebApp/web/HOM/COM/Board/board.aspx?boardID=5&cate=5'; // Example URL
 
 const notices = [
-  { id: 1, title: '2025학년도 2학기 국가장학금 1차 신청 안내', date: '2025.08.23' },
-  { id: 2, title: '[일반공지] 2025년 2학기 전남대학교 총장 장학생 선발 안내', date: '2025.08.21' },
-  { id: 3, title: '2025학년도 교내장학금 신청 기간 연장 안내', date: '2025.08.20' },
-  { id: 4, title: '글로벌 리더십 장학금 신청 자격 변경 공지', date: '2025.08.19' },
+  { id: 1, title: '2025학년도 2학기 국가장학금 1차 신청 최종 마감 안내', date: '2025.09.05' },
+  { id: 2, title: '[교내] 2025-2학기 성적우수장학금(Ⅰ,Ⅱ) 선발 결과 안내', date: '2025.08.30' },
+  { id: 3, title: '[교외] 현대차 정몽구 재단 2025년도 장학생 선발 공고', date: '2025.08.28' },
+  { id: 4, title: '2025학년도 1학기 생활지원 장학금 신청 안내', date: '2025.08.25' },
 ];
 
 const JnuNoticeCard: React.FC = () => {
   return (
     <Card>
         <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">전남대학교 공지사항</h3>
-            <a href={JNU_NOTICE_URL} target="_blank" rel="noopener noreferrer">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                <span className="text-gradient-aurora">장학금 관련 공지사항</span>
+            </h3>
+            <a href={SCHOLARSHIP_NOTICE_URL} target="_blank" rel="noopener noreferrer">
                 <Button variant="secondary">더보기</Button>
             </a>
         </div>
@@ -24,7 +26,7 @@ const JnuNoticeCard: React.FC = () => {
             {notices.map(notice => (
                 <a 
                     key={notice.id} 
-                    href={JNU_NOTICE_URL} 
+                    href={SCHOLARSHIP_NOTICE_URL} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="block p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-200 hover:shadow-md"
@@ -39,7 +41,7 @@ const JnuNoticeCard: React.FC = () => {
                 </a>
             ))}
         </div>
-        <p className="text-xs text-center text-gray-500 dark:text-gray-300 mt-4">* 위 목록은 최신 공지사항이 실시간으로 반영되는 예시입니다.</p>
+        <p className="text-xs text-center text-gray-500 dark:text-gray-300 mt-4">* 위 목록은 최신 장학금 공지사항이 실시간으로 반영되는 예시입니다.</p>
     </Card>
   );
 };

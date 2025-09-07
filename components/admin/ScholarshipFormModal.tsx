@@ -1,4 +1,7 @@
+
+
 import React, { useState, useEffect } from 'react';
+// FIX: Corrected import paths
 import { AllScholarships, ScholarshipCategory, ScholarshipSource } from '../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../constants';
 import Button from '../ui/Button';

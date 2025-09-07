@@ -1,3 +1,6 @@
+
+export type Role = 'student' | 'admin';
+
 export interface User {
   id: string;
   name: string;
@@ -6,88 +9,39 @@ export interface User {
   year: number;
 }
 
-export type Role = 'student' | 'admin';
-
-export type ScholarshipCategory = 'Merit-based' | 'Need-based' | 'Talent-based' | 'External' | 'Other';
+export type ScholarshipCategory = 'National' | 'Merit' | 'Financial' | 'Talent' | 'Other';
 export type ScholarshipSource = 'Internal' | 'External';
 
 export interface ScholarshipRequirements {
-    minGpa?: number;
-    allowedYears?: number[];
-    allowedDepartments?: string[];
-    incomeBracket?: number; 
+  incomeBracket?: number;
+  minGpa?: number;
+  allowedYears?: number[];
+  allowedDepartments?: string[];
 }
 
-export interface Scholarship {
-  id: string;
-  title: string;
-  category: ScholarshipCategory;
-  summary: string;
-  fullDescription: string;
-  requirements: ScholarshipRequirements;
-  applicationUrl: string;
-  deadline: string;
-}
-
-export interface ExternalScholarship {
-  id: string;
-  title: string;
-  foundation: string;
-  summary: string;
-  applicationUrl: string;
-  deadline: string;
-  category: ScholarshipCategory;
-}
-
-// A unified type for easier processing
-export type AllScholarships = {
+export interface AllScholarships {
   id: string;
   title: string;
   category: ScholarshipCategory;
   source: ScholarshipSource;
-  provider: string; // University name or Foundation name
+  provider: string;
   summary: string;
   deadline: string;
   applicationUrl: string;
   fullDescription: string;
-  requirements?: ScholarshipRequirements; // Optional for external, but available for internal
-};
+  requirements?: ScholarshipRequirements;
+}
 
-
-// FIX: Changed ScoredScholarship to extend AllScholarships to include source and provider.
 export interface ScoredScholarship extends AllScholarships {
   score: number;
   reasons: string[];
 }
 
-export interface ChatMessage {
-  id:string;
-  text?: string;
-  sender: 'user' | 'bot';
-  recommendations?: ScoredScholarship[];
-  // FIX: Broadened the type to allow both unified `AllScholarships` and raw `ExternalScholarship` objects as sources.
-  sources?: (AllScholarships | ExternalScholarship)[];
-  actions?: { text: string; handler: () => void }[];
-  isLoading?: boolean;
-}
-
-export type DiagnosticQuestionType = 'single-choice' | 'number-input';
-
-export interface DiagnosticQuestion {
+export interface AppNotification {
   id: string;
-  key: keyof User | 'gpa' | 'incomeBracket';
-  text: string;
-  type: DiagnosticQuestionType;
-  options?: { label: string; value: string | number }[];
-}
-
-export type DiagnosticAnswers = {
-  [key: string]: string | number;
-};
-
-export interface FAQItem {
-  question: string;
-  answer: string;
+  title: string;
+  message: string;
+  scholarshipId: string;
 }
 
 export type ApplicationStatus = 'Applied' | 'Awarded' | 'Rejected';
@@ -101,12 +55,74 @@ export interface ApplicationData {
   statement: string;
   submissionDate: string;
   status: ApplicationStatus;
-  fileName?: string; // To store the name of the uploaded PDF file
+  fileName?: string;
 }
 
-export interface AppNotification {
+export type QnaStatus = 'Unanswered' | 'Answered';
+
+export interface QnaItem {
     id: string;
-    title: string;
-    message: string;
-    scholarshipId: string;
+    question: string;
+    answer?: string;
+    studentName: string;
+    studentId: string;
+    date: string;
+    status: QnaStatus;
+}
+
+export interface DiagnosticQuestion {
+  key: keyof DiagnosticAnswers;
+  text: string;
+  type: 'number-input' | 'single-choice';
+  options?: { label: string; value: number | string }[];
+}
+
+export interface DiagnosticAnswers {
+  gpa?: number;
+  incomeBracket?: number;
+  year?: number;
+  department?: string;
+}
+
+export interface ExternalScholarship {
+  id: string;
+  title: string;
+  foundation: string;
+  summary: string;
+  applicationUrl: string;
+  deadline: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  text?: string;
+  sender: 'user' | 'bot';
+  isLoading?: boolean;
+  sources?: (AllScholarships | ExternalScholarship)[];
+  recommendations?: ScoredScholarship[];
+  actions?: { text: string; handler: () => void }[];
+}
+
+export interface StudentProfile {
+    id: string;
+    name: string;
+    universityId: string;
+    department: string;
+    year: number;
+    gpa: number;
+    incomeBracket: number;
+    status: '재학' | '휴학';
+    scholarshipReceived: boolean;
+    scholarshipName?: string;
+    scholarshipAmount?: number;
+}
+
+export type RpaTaskStatus = 'Completed' | 'In Progress' | 'Planned';
+
+export interface InternationalStudent {
+  id: string;
+  name: string;
+  nationality: string;
+  passportNo: string;
+  program: string;
 }

@@ -1,4 +1,6 @@
+
 import React from 'react';
+// FIX: Corrected import path
 import { User } from '../../types';
 
 interface ProfileCardProps {

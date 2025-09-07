@@ -1,4 +1,6 @@
-import React from 'react';
+
+import React, { useState, useMemo } from 'react';
+// FIX: Corrected import path
 import { ApplicationData, ApplicationStatus } from '../../types';
 
 interface ApplicationManagementTableProps {
@@ -19,12 +21,44 @@ const STATUS_STYLES: Record<ApplicationStatus, string> = {
 };
 
 const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({ applications, onUpdateStatus }) => {
-    
-    const sortedApplications = [...applications].sort((a, b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime());
+    const [scholarshipFilter, setScholarshipFilter] = useState<string>('All');
+
+    const scholarshipOptions = useMemo(() => {
+        const titles = new Set(applications.map(app => app.scholarshipTitle));
+        return ['All', ...Array.from(titles).sort()];
+    }, [applications]);
+
+    const filteredApplications = useMemo(() => {
+        const sorted = [...applications].sort((a, b) => new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime());
+        if (scholarshipFilter === 'All') {
+            return sorted;
+        }
+        return sorted.filter(app => app.scholarshipTitle === scholarshipFilter);
+    }, [applications, scholarshipFilter]);
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">학생 장학금 신청 관리</h2>
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
+                <h2 className="text-3xl font-black text-gray-900 dark:text-white">
+                    <span className="text-gradient-aurora">학생 장학금 신청 관리</span>
+                </h2>
+                <div className="flex items-center">
+                    <label htmlFor="scholarship-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 whitespace-nowrap">장학금 필터:</label>
+                    <select
+                        id="scholarship-filter"
+                        value={scholarshipFilter}
+                        onChange={(e) => setScholarshipFilter(e.target.value)}
+                        className="rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                    >
+                        {scholarshipOptions.map(title => (
+                            <option key={title} value={title}>
+                                {title === 'All' ? '모든 장학금' : title}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300">
@@ -37,7 +71,7 @@ const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedApplications.map(app => (
+                        {filteredApplications.map(app => (
                             <tr key={`${app.userId}-${app.scholarshipId}-${app.submissionDate}`} className="bg-white/50 dark:bg-gray-800/50 border-b dark:border-gray-700/50 hover:bg-white/70 dark:hover:bg-gray-900/40">
                                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{app.userName}</td>
                                 <td className="px-6 py-4">{app.scholarshipTitle}</td>
@@ -67,7 +101,7 @@ const ApplicationManagementTable: React.FC<ApplicationManagementTableProps> = ({
                         ))}
                     </tbody>
                 </table>
-                 {applications.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">접수된 지원서가 없습니다.</p>}
+                 {filteredApplications.length === 0 && <p className="text-center py-8 text-gray-500 dark:text-gray-400">선택한 조건에 맞는 지원서가 없습니다.</p>}
             </div>
         </div>
     );

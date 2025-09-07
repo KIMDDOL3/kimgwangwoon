@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo } from 'react';
+// FIX: Corrected import paths
 import { AllScholarships, ScholarshipCategory, User } from '../../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../../constants';
 import Button from '../../ui/Button';

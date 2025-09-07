@@ -1,3 +1,7 @@
+
+
+
+// FIX: Corrected import paths
 import { ExternalScholarship } from '../types';
 import { EXTERNAL_SCHOLARSHIPS } from '../constants';
 

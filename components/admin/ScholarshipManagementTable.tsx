@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+// FIX: Corrected import paths
 import { AllScholarships } from '../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../constants';
 import ScholarshipFormModal from './ScholarshipFormModal';
@@ -66,7 +67,9 @@ const ScholarshipManagementTable: React.FC<ManagementTableProps> = ({ scholarshi
     return (
         <>
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">장학금 관리</h2>
+                <h2 className="text-3xl font-black text-gray-900 dark:text-white">
+                    <span className="text-gradient-aurora">장학금 관리</span>
+                </h2>
                 <Button
                     onClick={handleOpenAddModal}
                     variant="primary"

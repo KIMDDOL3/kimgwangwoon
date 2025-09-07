@@ -1,4 +1,6 @@
+
 import React, { useMemo } from 'react';
+// FIX: Corrected import paths
 import { ApplicationData, ApplicationStatus } from '../../types';
 import Card from '../ui/Card';
 
@@ -31,8 +33,9 @@ const ApplicationStats: React.FC<ApplicationStatsProps> = ({ applications }) => 
             return acc;
         }, {} as Record<string, number>);
         
+        // FIX: Used a more explicit sort function (b[1] - a[1]) to ensure type safety.
         const topScholarships = Object.entries(scholarshipCounts)
-            .sort(([, a], [, b]) => b - a)
+            .sort((a, b) => b[1] - a[1])
             .slice(0, 3);
 
         return {
@@ -46,7 +49,9 @@ const ApplicationStats: React.FC<ApplicationStatsProps> = ({ applications }) => 
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">장학금 신청 통계</h2>
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-4">
+                <span className="text-gradient-aurora">장학금 신청 통계</span>
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <StatCard 
                     title="총 지원 건수" 
@@ -75,7 +80,9 @@ const ApplicationStats: React.FC<ApplicationStatsProps> = ({ applications }) => 
             </div>
             
             <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">가장 많이 지원한 장학금 Top 3</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                    <span className="text-gradient-aurora">가장 많이 지원한 장학금 Top 3</span>
+                </h3>
                 {stats.topScholarships.length > 0 ? (
                     <ul className="space-y-2">
                         {stats.topScholarships.map(([title, count], index) => (

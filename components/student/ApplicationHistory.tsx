@@ -1,4 +1,7 @@
+
+
 import React, { useState, useEffect, useCallback } from 'react';
+// FIX: Corrected import path
 import { ApplicationData, ApplicationStatus } from '../../types';
 
 const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
@@ -47,10 +50,12 @@ const ApplicationHistory: React.FC = () => {
 
     // Listen for custom event to reload data
     window.addEventListener('applicationSubmitted', loadApplications);
+    window.addEventListener('dataChanged', loadApplications); // Also listen for admin changes
 
     // Cleanup listener on component unmount
     return () => {
       window.removeEventListener('applicationSubmitted', loadApplications);
+      window.removeEventListener('dataChanged', loadApplications);
     };
   }, [loadApplications]);
 
@@ -84,19 +89,12 @@ const ApplicationHistory: React.FC = () => {
                     <p className="font-semibold text-gray-800 dark:text-gray-200 truncate">{app.scholarshipTitle}</p>
                   </div>
                   <div className="relative ml-2">
-                    <select
-                      value={app.status}
-                      onChange={(e) => handleStatusChange(app.scholarshipId, app.submissionDate, e.target.value as ApplicationStatus)}
-                      className={`text-xs font-semibold rounded-full py-1 pl-3 pr-8 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 appearance-none cursor-pointer ${STATUS_STYLES[app.status]}`}
+                    <p
+                      className={`text-xs font-semibold rounded-full py-1 px-3 ${STATUS_STYLES[app.status]}`}
                       aria-label={`${app.scholarshipTitle} application status`}
                     >
-                      {Object.keys(STATUS_LABELS).map(statusKey => (
-                        <option key={statusKey} value={statusKey}>{STATUS_LABELS[statusKey as ApplicationStatus]}</option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
+                     {STATUS_LABELS[app.status]}
+                    </p>
                   </div>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 pl-5">

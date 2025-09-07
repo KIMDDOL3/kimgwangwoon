@@ -1,217 +1,127 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { Scholarship, ExternalScholarship, AllScholarships } from '../types';
-import { searchExternalScholarships } from './externalScholarshipService';
-import { EXTERNAL_SCHOLARSHIPS } from '../constants';
 
-let ai: GoogleGenAI | null = null;
+import { GoogleGenAI } from "@google/genai";
+import { AllScholarships, ExternalScholarship } from "../types";
+import { searchExternalScholarships } from "./externalScholarshipService";
 
-const getAi = (): GoogleGenAI => {
-    if (!ai) {
-        // For deployment on services like Google Cloud Run,
-        // the API_KEY must be set as an environment variable in the service configuration.
-        // The code correctly reads this variable.
-        if (!process.env.API_KEY) {
-            throw new Error("API_KEY environment variable not set");
-        }
-        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    }
-    return ai;
-};
+// According to guidelines, initialize with apiKey from environment variable.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
-const retrieveRelevantScholarships = (query: string, scholarships: AllScholarships[], topK: number = 3): AllScholarships[] => {
-  const queryWords = new Set(query.toLowerCase().split(/\s+/).filter(w => w.length > 1));
-  if (queryWords.size === 0) return [];
+const RAG_PROMPT_TEMPLATE = `You are a helpful and friendly AI assistant for students at Chonnam National University. Your goal is to provide accurate and relevant information about scholarships.
 
-  const scoredScholarships = scholarships.map(scholarship => {
-    const content = `${scholarship.title} ${scholarship.summary} ${scholarship.fullDescription}`.toLowerCase();
-    let score = 0;
-    queryWords.forEach(word => {
-      if (content.includes(word)) score++;
-    });
-    // Give a huge bonus for exact title match to prioritize it
-    if (scholarship.title.toLowerCase().includes(query.toLowerCase())) score += 10;
-    return { scholarship, score };
-  });
+CONTEXT:
+Here is a list of available scholarships with their descriptions and requirements. Use this information to answer the user's question.
+---
+{scholarship_context}
+---
 
-  return scoredScholarships.filter(item => item.score > 0).sort((a, b) => b.score - a.score).slice(0, topK).map(item => item.scholarship);
-};
+If the user's question is about external scholarships (e.g., from foundations like Samsung, Hyundai), use the information from the external scholarship search results.
+---
+{external_scholarship_context}
+---
 
-type Intent = 'INTERNAL_SEARCH' | 'EXTERNAL_SEARCH' | 'GENERAL_CHAT';
+If the context does not contain the answer, state that you don't have enough information but can answer questions about the provided scholarships. Do not make up information.
+If the question is a general greeting or not related to scholarships, provide a friendly and helpful response.
 
-interface IntentResponse {
-    intent: Intent;
-    query: string;
-}
+QUESTION:
+{user_question}
 
-const getIntent = async (userMessage: string): Promise<IntentResponse> => {
-    const ai = getAi();
-    const systemInstruction = `You are an intent detection agent for a university scholarship chatbot.
-    Your task is to analyze the user's message and classify it into one of three intents:
-    1.  'INTERNAL_SEARCH': The user is asking about any scholarship, including the national scholarship ("국가장학금"), or scholarships specifically offered by Chonnam National University (e.g., "교내 장학금", "성적우수 장학금").
-    2.  'EXTERNAL_SEARCH': The user is asking about scholarships from outside foundations or companies (e.g., "교외 장학금", "삼성 장학금", "외부 장학금").
-    3.  'GENERAL_CHAT': The user is asking a general question, a greeting, or something unrelated to a specific scholarship search.
+ANSWER:
+`;
 
-    You must also extract a concise search query from the user's message.
-    Respond ONLY with a JSON object.`;
-
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            intent: {
-                type: Type.STRING,
-                enum: ['INTERNAL_SEARCH', 'EXTERNAL_SEARCH', 'GENERAL_CHAT'],
-            },
-            query: {
-                type: Type.STRING,
-                description: "A concise search query based on the user's message. For '국가장학금', the query should be '국가장학금'."
-            },
-        },
-        required: ["intent", "query"]
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `User message: "${userMessage}"`,
-        config: {
-            systemInstruction: systemInstruction,
-            responseMimeType: "application/json",
-            responseSchema: responseSchema,
-        }
-    });
-
-    try {
-        return JSON.parse(response.text.trim());
-    } catch (e) {
-        console.error("Failed to parse intent JSON from AI response:", response.text, e);
-        // Fallback to a safe default to prevent crashing the application
-        return { intent: 'GENERAL_CHAT', query: userMessage };
-    }
-};
-
-export interface RagResponse {
-  answer: string;
-  sources: (AllScholarships | ExternalScholarship)[];
-}
-
-const generateFinalResponse = async (userMessage: string, context: string, availableSources: (AllScholarships | ExternalScholarship)[]): Promise<RagResponse> => {
-    const ai = getAi();
-    const systemInstruction = `You are a friendly and helpful scholarship assistant for Chonnam National University.
-    - Your goal is to answer student questions based ONLY on the provided context.
-    - Do NOT invent information. If the context doesn't contain the answer, state that clearly.
-    - You MUST identify the scholarships used for the answer by their ID in the 'source_ids' field.
-    - CRITICAL RULE: If the context for a scholarship includes an 'Application URL', your response MUST conclude with a clear call-to-action encouraging the user to apply via that link. This is not optional.
-    - For the '국가장학금' (National Scholarship) specifically, providing the application link is the MOST IMPORTANT part of your answer. Ensure your response guides the user to apply at the URL provided in the context.
-    - Always respond in Korean.`;
-    
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-          answer: { type: Type.STRING, description: "The synthesized answer to the user's question in Korean." },
-          source_ids: { type: Type.ARRAY, items: { type: Type.STRING, description: "The IDs of the scholarships used as sources." } },
-        },
-        required: ["answer", "source_ids"]
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `Context:\n${context}\n\nUser question: "${userMessage}"`,
-        config: {
-            systemInstruction,
-            temperature: 0.1,
-            responseMimeType: "application/json",
-            responseSchema: responseSchema,
-        }
-    });
-
-    try {
-        const parsedResponse = JSON.parse(response.text.trim());
-        const sourceIds = new Set(parsedResponse.source_ids || []);
-        const sources = availableSources.filter(s => sourceIds.has(s.id));
-        return { answer: parsedResponse.answer, sources };
-    } catch (e) {
-        console.error("Failed to parse final response JSON from AI response:", response.text, e);
-        // If JSON parsing fails but we have text, return the raw text.
-        // This is better than crashing.
-        if (response.text) {
-            return { answer: response.text, sources: [] };
-        }
-        // As a last resort, throw an error if the response is completely empty/unusable.
-        throw new Error("Failed to generate or parse a valid response from the AI.");
-    }
-};
-
-
+/**
+ * Generates a response from the chatbot using a RAG approach.
+ */
 export const getChatbotResponse = async (
-  userMessage: string,
-  allInternalScholarships: AllScholarships[],
+  query: string,
+  internalScholarships: AllScholarships[],
   onStatusUpdate: (status: string) => void
-): Promise<RagResponse> => {
+): Promise<{ answer: string; sources: (AllScholarships | ExternalScholarship)[] }> => {
   try {
-    onStatusUpdate("사용자 의도 파악 중...");
-    const { intent, query } = await getIntent(userMessage);
+    onStatusUpdate("Analyzing your question...");
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate analysis
 
-    switch (intent) {
-        case 'INTERNAL_SEARCH': {
-            onStatusUpdate("교내 및 국가장학금 정보 검색 중...");
-            const relevantDocs = retrieveRelevantScholarships(query, allInternalScholarships, 5);
-            if (relevantDocs.length === 0) return { answer: "관련 교내 장학금 정보를 찾지 못했습니다.", sources: [] };
-            
-            const context = relevantDocs.map(s => `ID: ${s.id}\nTitle: ${s.title}\nDetails: ${s.fullDescription}\nApplication URL: ${s.applicationUrl}`).join('\n---\n');
-            return generateFinalResponse(userMessage, context, relevantDocs);
-        }
-
-        case 'EXTERNAL_SEARCH': {
-            onStatusUpdate("외부 장학재단 정보 검색 중...");
-            const relevantDocs = await searchExternalScholarships(query);
-            if (relevantDocs.length === 0) return { answer: "관련 교외 장학금 정보를 찾지 못했습니다.", sources: [] };
-
-            const context = relevantDocs.map(s => `ID: ${s.id}\nFoundation: ${s.foundation}\nTitle: ${s.title}\nSummary: ${s.summary}\nApplication URL: ${s.applicationUrl}`).join('\n---\n');
-            const allSources = [...allInternalScholarships, ...EXTERNAL_SCHOLARSHIPS];
-            return generateFinalResponse(userMessage, context, allSources);
-        }
-
-        case 'GENERAL_CHAT':
-        default:
-            return { answer: "안녕하세요! 전남대학교 장학금에 대해 무엇이든 물어보세요. '국가장학금'에 대해 질문하거나 '자가진단'을 시작할 수 있습니다.", sources: [] };
+    const queryLower = query.toLowerCase();
+    const isExternalQuery = ['samsung', 'hyundai', 'posco', '외부', '교외'].some(kw => queryLower.includes(kw));
+    
+    let externalSources: ExternalScholarship[] = [];
+    if (isExternalQuery) {
+      onStatusUpdate("Searching for external scholarships...");
+      externalSources = await searchExternalScholarships(query);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
+    
+    onStatusUpdate("Finding relevant information...");
+    // Simple keyword matching for RAG context
+    const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    const relevantInternalScholarships = internalScholarships.filter(s => {
+      const content = `${s.title} ${s.summary} ${s.fullDescription}`.toLowerCase();
+      return queryWords.some(word => content.includes(word));
+    });
+
+    const sources: (AllScholarships | ExternalScholarship)[] = [...relevantInternalScholarships, ...externalSources];
+
+    if (sources.length === 0 && !isExternalQuery) {
+       // If no specific internal scholarships match, provide all internal ones for broader context.
+       sources.push(...internalScholarships);
+    }
+
+    const scholarshipContext = sources.map(s => `Title: ${s.title}\nSummary: ${s.summary}`).join('\n\n');
+    const externalContext = externalSources.map(s => `Title: ${s.title}\nFoundation: ${s.foundation}\nSummary: ${s.summary}`).join('\n\n');
+
+    const finalPrompt = RAG_PROMPT_TEMPLATE
+      .replace('{scholarship_context}', scholarshipContext || 'No internal scholarship information available.')
+      .replace('{external_scholarship_context}', externalContext || 'No external scholarship information available.')
+      .replace('{user_question}', query);
+
+    onStatusUpdate("Generating a response with AI...");
+    
+    // Following the Gemini API guidelines
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: finalPrompt,
+    });
+    
+    const answer = response.text;
+
+    return { answer, sources };
 
   } catch (error) {
-    console.error("Error in getChatbotResponse:", error);
-    return { answer: "죄송합니다. 시스템에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", sources: [] };
+    console.error("Error getting chatbot response:", error);
+    return {
+      answer: "I'm sorry, but I encountered an error while processing your request. Please try again later.",
+      sources: [],
+    };
   }
 };
 
+/**
+ * Uses Gemini to review a student's scholarship application statement.
+ */
 export const getStatementReview = async (statement: string): Promise<string> => {
-    if (!statement.trim()) {
-        return "자기소개서를 먼저 작성해주세요.";
-    }
+  if (!statement.trim()) {
+    return "Please provide a statement to review.";
+  }
+  try {
+    const prompt = `You are an expert scholarship application advisor. Review the following personal statement and provide constructive feedback. Focus on clarity, persuasiveness, and impact. Provide specific suggestions for improvement in a friendly and encouraging tone. The feedback should be in Korean.
 
-    const ai = getAi();
-    const systemInstruction = `You are a helpful university career advisor. Your task is to review a student's personal statement for a scholarship application.
-    Provide constructive, actionable feedback in Korean.
-    Focus on:
-    1.  Clarity and conciseness.
-    2.  Persuasiveness and impact.
-    3.  Grammar and tone.
-    4.  Connection to the scholarship's likely purpose (e.g., academic merit, financial need, leadership).
+STATEMENT:
+---
+${statement}
+---
 
-    Structure your feedback with clear headings for each point (e.g., "**총평:**", "**개선 제안:**").
-    Keep the feedback encouraging and supportive. Do not rewrite the statement for the student, but guide them on how to improve it themselves.
-    For example, instead of "이렇게 고치세요", say "이 부분은 구체적인 경험을 추가하면 더 설득력 있을 것 같습니다."
-    Your entire response must be in Korean.`;
-    
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Please review the following personal statement:\n\n---\n\n${statement}`,
-            config: {
-                systemInstruction,
-                temperature: 0.5,
-            }
-        });
-        return response.text;
-    } catch (error) {
-        console.error("Error getting statement review:", error);
-        return "죄송합니다. AI 검토 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-    }
+FEEDBACK:`;
+
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          temperature: 0.7,
+        }
+    });
+
+    return response.text;
+  } catch (error) {
+    console.error("Error getting statement review:", error);
+    return "Sorry, an error occurred while reviewing your statement. Please try again.";
+  }
 };

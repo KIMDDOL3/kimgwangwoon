@@ -1,6 +1,5 @@
 import React from 'react';
-// FIX: Import AllScholarships type to handle unified scholarship objects.
-import { ChatMessage, Scholarship, ExternalScholarship, User, AllScholarships } from '../../types';
+import { ChatMessage, ExternalScholarship, User, AllScholarships } from '../../types';
 import ScholarshipList from './ScholarshipList';
 
 interface MessageProps {
@@ -25,8 +24,6 @@ const TypingIndicator: React.FC<{text: string}> = ({text}) => (
     </div>
 );
 
-// FIX: Updated the type guard to handle both AllScholarships and raw ExternalScholarship objects.
-// This allows for correctly identifying any external scholarship source.
 const isExternalScholarship = (source: AllScholarships | ExternalScholarship): source is (AllScholarships & { source: 'External' }) | ExternalScholarship => {
   return ('source' in source && source.source === 'External') || 'foundation' in source;
 };
@@ -72,10 +69,9 @@ const Message: React.FC<MessageProps> = ({ message, user }) => {
                             </svg>
                             <span>{source.title}</span>
                          </div>
-                         {/* FIX: Updated logic to correctly display provider/foundation for both AllScholarships and ExternalScholarship types. */}
                          {isExternalScholarship(source) && (
                             <div className="ml-6 text-xs text-gray-500 dark:text-gray-400">
-                                <span className="font-semibold bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">교외</span> {'provider' in source ? source.provider : source.foundation}
+                                <span className="font-semibold bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">교외</span> {'provider' in source ? source.provider : ('foundation' in source ? source.foundation : '')}
                             </div>
                          )}
                       </div>

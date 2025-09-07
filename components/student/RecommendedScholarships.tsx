@@ -1,7 +1,9 @@
+
+
 import React, { useState } from 'react';
-import { ScoredScholarship, User } from '../../types';
+// FIX: Corrected import paths
+import { ScoredScholarship, User, ApplicationData } from '../../types';
 import ApplicationModal from './ApplicationModal';
-import { ApplicationData } from '../../types';
 
 interface RecommendedScholarshipsProps {
   scholarships: ScoredScholarship[];

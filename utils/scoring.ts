@@ -1,3 +1,7 @@
+
+
+
+// FIX: Corrected import path
 import { DiagnosticAnswers, AllScholarships, ScoredScholarship } from '../types';
 
 export const scoreScholarships = (

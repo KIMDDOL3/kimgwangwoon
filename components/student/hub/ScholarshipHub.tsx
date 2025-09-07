@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// FIX: Corrected import paths
 import { AllScholarships, ApplicationData, User } from '../../../types';
 import ScholarshipDistributionChart from './ScholarshipDistributionChart';
 import ScholarshipDataTable from './ScholarshipDataTable';
@@ -77,13 +78,17 @@ const ScholarshipHub: React.FC<ScholarshipHubProps> = ({ onBack, onAskAi, allSch
         <main className="p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-2xl shadow-lg p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">장학금 분포 현황</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  <span className="text-gradient-aurora">장학금 분포 현황</span>
+                </h2>
                 <div className="h-80 flex items-center justify-center">
                     <ScholarshipDistributionChart scholarships={allScholarships} />
                 </div>
             </div>
             <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-2xl shadow-lg p-6 border border-white/20">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">전체 장학금 목록</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  <span className="text-gradient-aurora">전체 장학금 목록</span>
+                </h2>
                 <ScholarshipDataTable scholarships={allScholarships} onAskAi={onAskAi} onApply={handleApplyClick} />
             </div>
           </div>

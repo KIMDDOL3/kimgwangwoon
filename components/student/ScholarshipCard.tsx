@@ -24,14 +24,12 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
       fileName: file?.name,
     };
     
-    // Save submission to local storage
     try {
       const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
       const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
       const applications: ApplicationData[] = storedApplicationsRaw ? JSON.parse(storedApplicationsRaw) : [];
       applications.push(applicationData);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(applications));
-      // Notify other components that a submission happened
       window.dispatchEvent(new CustomEvent('applicationSubmitted'));
     } catch (error) {
       console.error("Failed to save application to local storage:", error);
@@ -87,13 +85,13 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, user }) 
           </button>
         </div>
       </div>
-      <ApplicationModal
+      {isModalOpen && <ApplicationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleApplicationSubmit}
         scholarship={scholarship}
         user={user}
-      />
+      />}
     </>
   );
 };

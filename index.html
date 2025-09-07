@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="image" href="https://storage.cloud.google.com/personmate/test.png">
     <script src="https://cdn.tailwindcss.com"></script>
   <script type="importmap">
 {
@@ -38,6 +39,21 @@
     }
     .font-nanum {
       font-family: 'Nanum Gothic', sans-serif;
+    }
+    
+    .text-gradient-aurora {
+      background: linear-gradient(90deg, #10b981, #059669, #047857);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+    .dark .text-gradient-aurora {
+       background: linear-gradient(90deg, #6ee7b7, #34d399, #10b981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
     }
 
     ::-webkit-scrollbar {

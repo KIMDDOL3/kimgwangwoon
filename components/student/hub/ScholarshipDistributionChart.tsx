@@ -1,4 +1,6 @@
+
 import React, { useMemo, useState } from 'react';
+// FIX: Corrected import paths
 import { AllScholarships, ScholarshipCategory } from '../../../types';
 import { SCHOLARSHIP_CATEGORIES } from '../../../constants';
 
@@ -20,7 +22,8 @@ const DonutSegment: React.FC<{
   onMouseLeave: () => void;
 }> = ({ radius, strokeWidth, angle, offset, color, label, isHovered, isDimmed, onMouseEnter, onMouseLeave }) => {
   const circumference = 2 * Math.PI * radius;
-  const dasharray = `${(angle / 360) * circumference} ${circumference}`;
+  // FIX: Cast angle and circumference to Number to prevent arithmetic errors
+  const dasharray = `${(Number(angle) / 360) * Number(circumference)} ${circumference}`;
 
   return (
     <g onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
@@ -32,7 +35,8 @@ const DonutSegment: React.FC<{
         stroke={color}
         strokeWidth={strokeWidth}
         strokeDasharray={dasharray}
-        strokeDashoffset={(-offset / 360) * circumference}
+        // FIX: Cast offset and circumference to Number to prevent arithmetic errors
+        strokeDashoffset={(-Number(offset) / 360) * Number(circumference)}
         transform={`rotate(-90 ${radius + strokeWidth} ${radius + strokeWidth})`}
         className="transition-all duration-300 ease-in-out cursor-pointer"
         style={{

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// FIX: Changed Scholarship to AllScholarships to accept a more general scholarship type.
 import { AllScholarships, User } from '../../types';
 import { getStatementReview } from '../../services/geminiService';
 
@@ -38,7 +37,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, on
         setSelectedFile(e.target.files[0]);
       } else {
         alert('PDF 파일만 업로드할 수 있습니다.');
-        e.target.value = ''; // Reset file input
+        e.target.value = ''; 
       }
     }
   };
@@ -83,7 +82,6 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, on
               ></textarea>
             </div>
             
-            {/* PDF Upload Section */}
             <div>
                 <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     증빙서류 첨부 (PDF)
