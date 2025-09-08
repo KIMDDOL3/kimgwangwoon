@@ -93,12 +93,22 @@ export interface ExternalScholarship {
   deadline: string;
 }
 
+// FIX: Moved ManualEntry here to be globally accessible and avoid type conflicts.
+export interface ManualEntry {
+    id: string;
+    category: 'Scholarship' | 'Application' | 'System' | 'RPA';
+    keywords: string[];
+    question: string;
+    answer: string;
+}
+
 export interface ChatMessage {
   id: string;
   text?: string;
   sender: 'user' | 'bot';
   isLoading?: boolean;
-  sources?: (AllScholarships | ExternalScholarship)[];
+  // FIX: Updated sources to be a union type to support both student and admin chat contexts.
+  sources?: (AllScholarships | ExternalScholarship | ManualEntry)[];
   recommendations?: ScoredScholarship[];
   actions?: { text: string; handler: () => void }[];
 }

@@ -1,11 +1,5 @@
 
-export interface ManualEntry {
-    id: string;
-    category: 'Scholarship' | 'Application' | 'System' | 'RPA';
-    keywords: string[];
-    question: string;
-    answer: string;
-}
+import { ManualEntry } from '../../../types';
 
 export const ADMIN_MANUAL_DATA: ManualEntry[] = [
     {

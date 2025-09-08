@@ -1,10 +1,9 @@
-
 import React, { useState, useCallback, useEffect } from "react";
 import LoginScreen from "./components/LoginScreen";
 import StudentDashboard from "./components/student/StudentDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 // FIX: Corrected import path for types
-import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem, CollaborationChannel, ChannelMessage } from "./types";
+import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem, CollaborationChannel, ChannelMessage, ChatMessage } from "./types";
 import { ALL_SCHOLARSHIPS as INITIAL_SCHOLARSHIPS, MOCK_ADMIN_USER, MOCK_STUDENT_USER } from "./constants";
 import { MOCK_QNA_DATA } from "./components/admin/qnaData";
 const App: React.FC = () => {
@@ -16,6 +15,8 @@ const App: React.FC = () => {
     const [qnaData, setQnaData] = useState<QnaItem[]>([]);
     const [channels, setChannels] = useState<CollaborationChannel[]>([]);
     const [messages, setMessages] = useState<ChannelMessage[]>([]);
+    const [studentChatHistory, setStudentChatHistory] = useState<ChatMessage[]>([]);
+    const [adminChatHistory, setAdminChatHistory] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const loadDataFromLocalStorage = useCallback((key: string, setter: Function, initialData: any[] = []) => {
         try {
@@ -41,6 +42,8 @@ const App: React.FC = () => {
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
             loadDataFromLocalStorage('jnu_collab_channels', setChannels);
             loadDataFromLocalStorage('jnu_collab_messages', setMessages);
+            loadDataFromLocalStorage('jnu_student_chat_history', setStudentChatHistory);
+            loadDataFromLocalStorage('jnu_admin_chat_history', setAdminChatHistory);
             setIsLoading(false);
         };
         loadInitialData();
@@ -57,12 +60,20 @@ const App: React.FC = () => {
             if (e.key === 'jnu_collab_messages') {
                 loadDataFromLocalStorage('jnu_collab_messages', setMessages);
             }
+             if (e.key === 'jnu_student_chat_history') {
+                loadDataFromLocalStorage('jnu_student_chat_history', setStudentChatHistory);
+            }
+            if (e.key === 'jnu_admin_chat_history') {
+                loadDataFromLocalStorage('jnu_admin_chat_history', setAdminChatHistory);
+            }
         };
         const handleCustomEvent = () => {
             loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
             loadDataFromLocalStorage('jnu_collab_channels', setChannels);
             loadDataFromLocalStorage('jnu_collab_messages', setMessages);
+            loadDataFromLocalStorage('jnu_student_chat_history', setStudentChatHistory);
+            loadDataFromLocalStorage('jnu_admin_chat_history', setAdminChatHistory);
         };
         window.addEventListener('storage', handleStorageChange);
         window.addEventListener('dataChanged', handleCustomEvent);
@@ -142,6 +153,24 @@ const App: React.FC = () => {
         window.dispatchEvent(new CustomEvent('dataChanged'));
     };
 
+    const handleSaveStudentChat = (newHistory: ChatMessage[]) => {
+        try {
+            localStorage.setItem('jnu_student_chat_history', JSON.stringify(newHistory));
+            setStudentChatHistory(newHistory);
+        } catch (error) {
+            console.error('Failed to save student chat history:', error);
+        }
+    };
+
+    const handleSaveAdminChat = (newHistory: ChatMessage[]) => {
+        try {
+            localStorage.setItem('jnu_admin_chat_history', JSON.stringify(newHistory));
+            setAdminChatHistory(newHistory);
+        } catch (error) {
+            console.error('Failed to save admin chat history:', error);
+        }
+    };
+
     const handleRoleSelect = (selectedRole: Role) => {
         if (selectedRole === 'student') {
             setUser(MOCK_STUDENT_USER);
@@ -187,7 +216,19 @@ const App: React.FC = () => {
             return <LoginScreen onRoleSelect={handleRoleSelect}/>;
         }
         if (role === 'student') {
-            return (<StudentDashboard isLoading={isLoading} user={user} onLogout={handleLogout} allScholarships={scholarships} notifications={notifications} onDismissNotification={handleDismissNotification} onDismissAllNotifications={handleDismissAllNotifications} qnaData={qnaData.filter(q => q.studentId === user.universityId)} onAddQuestion={handleAddQuestion}/>);
+            return (<StudentDashboard 
+                isLoading={isLoading} 
+                user={user} 
+                onLogout={handleLogout} 
+                allScholarships={scholarships} 
+                notifications={notifications} 
+                onDismissNotification={handleDismissNotification} 
+                onDismissAllNotifications={handleDismissAllNotifications} 
+                qnaData={qnaData.filter(q => q.studentId === user.universityId)} 
+                onAddQuestion={handleAddQuestion}
+                chatHistory={studentChatHistory}
+                onSaveChatHistory={handleSaveStudentChat}
+            />);
         }
         if (role === 'admin') {
             return (<AdminDashboard 
@@ -207,6 +248,8 @@ const App: React.FC = () => {
                 messages={messages}
                 onCreateChannel={handleCreateChannel}
                 onAddChannelMessage={handleAddChannelMessage}
+                adminChatHistory={adminChatHistory}
+                onSaveAdminChatHistory={handleSaveAdminChat}
             />);
         }
     };

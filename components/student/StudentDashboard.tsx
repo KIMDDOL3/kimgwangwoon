@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // FIX: Corrected import path
-import { User, AllScholarships, AppNotification, QnaItem } from '../../types';
+import { User, AllScholarships, AppNotification, QnaItem, ChatMessage } from '../../types';
 import ProfileCard from './ProfileCard';
 import ChatInterface from './ChatInterface';
 import ApplicationHistory from './ApplicationHistory';
@@ -23,9 +23,11 @@ interface StudentDashboardProps {
     qnaData: QnaItem[];
     onAddQuestion: (newQuestion: Omit<QnaItem, 'id' | 'date' | 'status'>) => void;
     isLoading: boolean;
+    chatHistory: ChatMessage[];
+    onSaveChatHistory: (newHistory: ChatMessage[]) => void;
 }
 type StudentView = 'dashboard' | 'hub' | 'qna';
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, allScholarships, notifications, onDismissNotification, onDismissAllNotifications, qnaData, onAddQuestion, isLoading }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, allScholarships, notifications, onDismissNotification, onDismissAllNotifications, qnaData, onAddQuestion, isLoading, chatHistory, onSaveChatHistory }) => {
     const [view, setView] = useState<StudentView>('dashboard');
     const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
     const handleNavigateTo = (targetView: StudentView) => setView(targetView);
@@ -86,7 +88,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
               </div>
 
               <div className="lg:col-span-2">
-                <ChatInterface user={user} initialPrompt={initialChatPrompt} onPromptConsumed={handlePromptConsumed} allScholarships={allScholarships}/>
+                <ChatInterface 
+                  user={user} 
+                  initialPrompt={initialChatPrompt} 
+                  onPromptConsumed={handlePromptConsumed} 
+                  allScholarships={allScholarships}
+                  initialMessages={chatHistory}
+                  onSaveHistory={onSaveChatHistory}
+                />
               </div>
             </div>
           </div>

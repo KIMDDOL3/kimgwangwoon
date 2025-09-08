@@ -12,10 +12,12 @@ interface ChatInterfaceProps {
   initialPrompt?: string | null;
   onPromptConsumed?: () => void;
   allScholarships: AllScholarships[];
+  initialMessages: ChatMessage[];
+  onSaveHistory: (newHistory: ChatMessage[]) => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPromptConsumed, allScholarships }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPromptConsumed, allScholarships, initialMessages, onSaveHistory }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('답변을 생성 중입니다...');
@@ -37,8 +39,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
       sender: 'user',
     };
     
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const messagesWithUser = [...messages, userMessage];
+    setMessages(messagesWithUser);
     setInputValue('');
     setIsLoading(true);
 
@@ -58,7 +60,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
     };
     
     const internalScholarships = allScholarships.filter(s => s.source === 'Internal');
-    const ragResponse = await getChatbotResponse(messageText, newMessages, internalScholarships, onStatusUpdate);
+    const ragResponse = await getChatbotResponse(messageText, messagesWithUser, internalScholarships, onStatusUpdate);
 
     const botMessage: ChatMessage = {
       id: Date.now().toString() + '-bot',
@@ -67,11 +69,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
       sender: 'bot',
     };
     
-    setMessages(prev => prev.filter(m => m.id !== loadingMessageId));
-    setMessages(prev => [...prev, botMessage]);
+    setMessages(prev => {
+        const finalMessages = [...prev.filter(m => m.id !== loadingMessageId), botMessage];
+        onSaveHistory(finalMessages);
+        return finalMessages;
+    });
+    
     setIsLoading(false);
     setLoadingText('답변을 생성 중입니다...');
-  }, [isLoading, loadingText, allScholarships, messages]);
+  }, [isLoading, loadingText, allScholarships, messages, onSaveHistory]);
 
   useEffect(() => {
     if (initialPrompt && !isLoading) {
@@ -81,52 +87,61 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
   }, [initialPrompt, isLoading, handleSendMessage, onPromptConsumed]);
 
   const startDiagnosis = useCallback(() => {
-    setMessages(prev => [
-      ...prev,
-      {
+    // FIX: Explicitly typed the new message object to prevent TypeScript from inferring 'sender' as a generic string.
+    const botMessage: ChatMessage = {
         id: Date.now().toString(),
         sender: 'bot',
         text: '맞춤 장학금 추천을 위한 자가진단을 시작하겠습니다. 몇 가지 질문에 답변해주세요.',
-      },
-    ]);
+    };
+    setMessages(prevMessages => {
+        const newMessages = [
+            ...prevMessages,
+            botMessage,
+        ];
+        onSaveHistory(newMessages);
+        return newMessages;
+    });
     setIsDiagnosing(true);
-  }, []);
+  }, [onSaveHistory]);
 
   const handleDiagnosisComplete = useCallback((answers: DiagnosticAnswers) => {
     setIsDiagnosing(false);
     const internalScholarships = allScholarships.filter(s => s.source === 'Internal' && s.requirements);
     const recommendations = scoreScholarships(answers, internalScholarships);
     
-    let botMessage: ChatMessage;
-
-    if (recommendations.length > 0) {
-      botMessage = {
+    const botMessage: ChatMessage = recommendations.length > 0
+      ? {
         id: Date.now().toString(),
         sender: 'bot',
         text: `진단 결과를 바탕으로 ${user.name}님에게 가장 적합한 장학금을 추천해 드립니다.`,
         recommendations: recommendations.slice(0, 3),
-      };
-    } else {
-      botMessage = {
+      } : {
         id: Date.now().toString(),
         sender: 'bot',
         text: '아쉽지만, 현재 조건에 맞는 맞춤 장학금을 찾지 못했습니다. 다른 조건으로 다시 시도해보시거나, 전체 장학금 목록을 확인해보세요.',
       };
-    }
-    setMessages(prev => [...prev, botMessage]);
-  }, [user.name, allScholarships]);
+
+    setMessages(prev => {
+        const finalMessages = [...prev, botMessage];
+        onSaveHistory(finalMessages);
+        return finalMessages;
+    });
+  }, [user.name, allScholarships, onSaveHistory]);
 
 
   useEffect(() => {
-    if (messages.length > 0) return;
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome-1',
-      sender: 'bot',
-      text: `안녕하세요, ${user.name}님! AI 장학 도우미입니다.\n대시보드에서 국가장학금 정보를 바로 확인하거나, 궁금한 점을 질문해보세요.`,
-      actions: [{ text: '맞춤 장학금 찾기 (자가진단)', handler: startDiagnosis }],
-    };
-    setMessages([welcomeMessage]);
-  }, [user, startDiagnosis, messages.length]);
+    if (initialMessages.length === 0) {
+        const welcomeMessage: ChatMessage = {
+          id: 'welcome-1',
+          sender: 'bot',
+          text: `안녕하세요, ${user.name}님! AI 장학 도우미입니다.\n대시보드에서 국가장학금 정보를 바로 확인하거나, 궁금한 점을 질문해보세요.`,
+          actions: [{ text: '맞춤 장학금 찾기 (자가진단)', handler: startDiagnosis }],
+        };
+        const newHistory = [welcomeMessage];
+        setMessages(newHistory);
+        onSaveHistory(newHistory);
+    }
+  }, []); // Intentionally empty to run only once on mount if history is empty
 
   return (
     <Card className="p-0">

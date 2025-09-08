@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // FIX: Corrected import for ApplicationStatus type
-import { User, AllScholarships, ApplicationData, QnaItem, ApplicationStatus, CollaborationChannel, ChannelMessage } from '../../types';
+import { User, AllScholarships, ApplicationData, QnaItem, ApplicationStatus, CollaborationChannel, ChannelMessage, ChatMessage } from '../../types';
 import ScholarshipManagementTable from './ScholarshipManagementTable';
 import ApplicationManagementTable from './ApplicationManagementTable';
 import AutomationTools from './automation/AutomationTools';
@@ -31,12 +31,14 @@ interface AdminDashboardProps {
     messages: ChannelMessage[];
     onCreateChannel: (scholarshipId: string, scholarshipTitle:string) => CollaborationChannel | undefined;
     onAddChannelMessage: (channelId: string, text: string) => void;
+    adminChatHistory: ChatMessage[];
+    onSaveAdminChatHistory: (newHistory: ChatMessage[]) => void;
 }
 
 export type AdminView = 'home' | 'scholarships' | 'applications' | 'qna' | 'collaboration' | 'automation' | 'rpa' | 'student-lookup' | 'international' | 'chat' | 'blueprint';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
-    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer, isLoading, channels, messages, onCreateChannel, onAddChannelMessage } = props;
+    const { user, onLogout, scholarships, onAdd, onUpdate, onDelete, onPushNotification, applicationData, onUpdateStatus, qnaData, onUpdateAnswer, isLoading, channels, messages, onCreateChannel, onAddChannelMessage, adminChatHistory, onSaveAdminChatHistory } = props;
     const [view, setView] = useState<AdminView>('home');
     const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
 
@@ -111,7 +113,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
             case 'international':
                  return <InternationalAffairsDashboard />;
             case 'chat':
-                 return <AdminChatInterface />;
+                 return <AdminChatInterface initialMessages={adminChatHistory} onSaveHistory={onSaveAdminChatHistory} />;
             case 'blueprint':
                  return <AppBlueprint />;
             default:

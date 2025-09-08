@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import Card from '../../ui/Card';
-import { ADMIN_MANUAL_DATA, ManualEntry } from './adminManualData';
+// FIX: Use the unified ChatMessage and ManualEntry types from the global types file.
+import { ChatMessage, ManualEntry } from '../../../types';
+import { ADMIN_MANUAL_DATA } from './adminManualData';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
-interface ChatMessage {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  sources?: ManualEntry[];
+interface AdminChatInterfaceProps {
+    initialMessages: ChatMessage[];
+    onSaveHistory: (newHistory: ChatMessage[]) => void;
 }
 
-const AdminChatInterface: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+const AdminChatInterface: React.FC<AdminChatInterfaceProps> = ({ initialMessages, onSaveHistory }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -23,13 +23,16 @@ const AdminChatInterface: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: 'welcome-1',
-        text: '안녕하세요. AI 업무 매뉴얼 어시스턴트입니다. 장학금 관리, 신청서 처리, RPA 도구 사용법 등 어떤 업무에 대해 궁금하신가요?',
-        sender: 'bot',
-      },
-    ]);
+    if (initialMessages.length === 0) {
+        // FIX: Explicitly typed `welcomeMessage` as ChatMessage to prevent type inference issues with the `sender` property.
+        const welcomeMessage: ChatMessage = {
+            id: 'welcome-1',
+            text: '안녕하세요. AI 업무 매뉴얼 어시스턴트입니다. 장학금 관리, 신청서 처리, RPA 도구 사용법 등 어떤 업무에 대해 궁금하신가요?',
+            sender: 'bot',
+        };
+        setMessages([welcomeMessage]);
+        onSaveHistory([welcomeMessage]);
+    }
   }, []);
 
   const findRelevantManualEntries = (query: string): ManualEntry[] => {
@@ -60,15 +63,16 @@ const AdminChatInterface: React.FC = () => {
     if (!inputValue.trim() || isLoading) return;
 
     const userMessage: ChatMessage = { id: Date.now().toString(), text: inputValue, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
     const currentMessages = [...messages, userMessage];
+    setMessages(currentMessages);
     setInputValue('');
     setIsLoading(true);
 
     const relevantManuals = findRelevantManualEntries(inputValue);
     
+    // FIX: Safely handle potentially optional `text` property by providing a fallback empty string.
     const historyText = currentMessages.map(m => 
-        `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`
+        `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text || ''}`
     ).join('\n');
 
     const ragPrompt = `You are an AI assistant for university staff, providing answers based on an internal administrative manual. Use the provided context to answer the user's question accurately.
@@ -101,7 +105,9 @@ Based *only* on the context provided, answer the user's question in Korean. If t
             sender: 'bot',
             sources: relevantManuals,
         };
-        setMessages(prev => [...prev, botMessage]);
+        const finalMessages = [...currentMessages, botMessage];
+        setMessages(finalMessages);
+        onSaveHistory(finalMessages);
 
     } catch (error) {
         console.error("Gemini API call failed:", error);
@@ -110,7 +116,9 @@ Based *only* on the context provided, answer the user's question in Korean. If t
             text: '죄송합니다, 답변을 생성하는 중 오류가 발생했습니다.',
             sender: 'bot',
         };
-        setMessages(prev => [...prev, errorMessage]);
+        const finalMessages = [...currentMessages, errorMessage];
+        setMessages(finalMessages);
+        onSaveHistory(finalMessages);
     } finally {
         setIsLoading(false);
     }
@@ -133,7 +141,7 @@ Based *only* on the context provided, answer the user's question in Korean. If t
                             <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
                                 <h4 className="text-xs font-semibold mb-1">참고 매뉴얼</h4>
                                 <ul className="space-y-1">
-                                    {msg.sources.map(source => <li key={source.id} className="text-xs opacity-80">{source.question}</li>)}
+                                    {msg.sources.map(source => <li key={source.id} className="text-xs opacity-80">{(source as ManualEntry).question}</li>)}
                                 </ul>
                             </div>
                         )}
