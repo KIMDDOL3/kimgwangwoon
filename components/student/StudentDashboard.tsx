@@ -62,7 +62,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
           <div className="max-w-7xl mx-auto space-y-6">
             {/* JNU Banner */}
             <a href="https://www.jnu.ac.kr" target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden shadow-lg group relative">
-                <img src="https://storage.cloud.google.com/personmate/test.png" alt="전남대학교 AI 서머스쿨" className="w-full h-48 object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-110"/>
+                <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop" alt="전남대학교 캠퍼스 전경" className="w-full h-48 object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-110"/>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent flex flex-col items-center justify-center p-4 text-center">
                     <h2 className="font-nanum text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-wide transition-transform duration-500 ease-in-out group-hover:scale-105 group-hover:-translate-y-2">
                         지역과 함께 세계로 미래로

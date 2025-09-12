@@ -1,5 +1,6 @@
 import React from 'react';
-import { ChatMessage, ExternalScholarship, User, AllScholarships } from '../../types';
+// FIX: Add ManualEntry to imports to handle all possible source types.
+import { ChatMessage, ExternalScholarship, User, AllScholarships, ManualEntry } from '../../types';
 import ScholarshipList from './ScholarshipList';
 
 interface MessageProps {
@@ -26,6 +27,11 @@ const TypingIndicator: React.FC<{text: string}> = ({text}) => (
 
 const isExternalScholarship = (source: AllScholarships | ExternalScholarship): source is (AllScholarships & { source: 'External' }) | ExternalScholarship => {
   return ('source' in source && source.source === 'External') || 'foundation' in source;
+};
+
+// FIX: Add a type guard to differentiate scholarship sources from manual entries.
+const isScholarship = (source: AllScholarships | ExternalScholarship | ManualEntry): source is AllScholarships | ExternalScholarship => {
+    return 'title' in source;
 };
 
 
@@ -67,9 +73,11 @@ const Message: React.FC<MessageProps> = ({ message, user }) => {
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-green-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                             </svg>
-                            <span>{source.title}</span>
+                            {/* FIX: Conditionally display title or question based on source type. */}
+                            <span>{isScholarship(source) ? source.title : source.question}</span>
                          </div>
-                         {isExternalScholarship(source) && (
+                         {/* FIX: Ensure source is a scholarship before checking if it's external. */}
+                         {isScholarship(source) && isExternalScholarship(source) && (
                             <div className="ml-6 text-xs text-gray-500 dark:text-gray-400">
                                 <span className="font-semibold bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">교외</span> {'provider' in source ? source.provider : ('foundation' in source ? source.foundation : '')}
                             </div>
