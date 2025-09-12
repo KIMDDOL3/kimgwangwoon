@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// FIX: Corrected import path
-import { User, AllScholarships, AppNotification, QnaItem, ChatMessage } from '../../types';
+// FIX: Corrected import path and added new types
+import { User, AllScholarships, AppNotification, QnaItem, ChatMessage, ApplicationData } from '../../types';
 import ProfileCard from './ProfileCard';
 import ChatInterface from './ChatInterface';
 import ApplicationHistory from './ApplicationHistory';
@@ -13,6 +13,9 @@ import NotificationBell from './NotificationBell';
 import JnuNoticeCard from './JnuNoticeCard';
 import StudentQnaBoard from './qna/StudentQnaBoard';
 import QnaCard from './qna/QnaCard';
+import ScholarshipDetailModal from './ScholarshipDetailModal';
+import ApplicationModal from './ApplicationModal';
+
 interface StudentDashboardProps {
     user: User;
     onLogout: () => void;
@@ -30,12 +33,71 @@ type StudentView = 'dashboard' | 'hub' | 'qna';
 const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, allScholarships, notifications, onDismissNotification, onDismissAllNotifications, qnaData, onAddQuestion, isLoading, chatHistory, onSaveChatHistory }) => {
     const [view, setView] = useState<StudentView>('dashboard');
     const [initialChatPrompt, setInitialChatPrompt] = useState<string | null>(null);
+
+    const [selectedScholarship, setSelectedScholarship] = useState<AllScholarships | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+
     const handleNavigateTo = (targetView: StudentView) => setView(targetView);
     const handlePromptConsumed = () => setInitialChatPrompt(null);
+    
     const handleAskAi = (scholarshipTitle: string) => {
         setInitialChatPrompt(`'${scholarshipTitle}' 장학금에 대해 자세히 알려줘.`);
-        setView('dashboard');
+        setView('dashboard'); // Ensure chat is visible
     };
+
+    const handleNoticeClick = (scholarship: AllScholarships) => {
+        setSelectedScholarship(scholarship);
+        setIsDetailModalOpen(true);
+    };
+
+    const handleCloseDetailModal = () => {
+        setIsDetailModalOpen(false);
+        setSelectedScholarship(null);
+    };
+    
+    const handleApplyClick = (scholarship: AllScholarships) => {
+        setSelectedScholarship(scholarship);
+        setIsDetailModalOpen(false); // Close detail if it was open
+        setIsApplicationModalOpen(true);
+    };
+
+    const handleCloseApplicationModal = () => {
+        setIsApplicationModalOpen(false);
+        setSelectedScholarship(null);
+    };
+    
+    const handleApplicationSubmit = (statement: string, file?: File) => {
+        if (!selectedScholarship) return;
+        
+        const applicationData: ApplicationData = {
+          scholarshipId: selectedScholarship.id,
+          scholarshipTitle: selectedScholarship.title,
+          userId: user.id,
+          userName: user.name,
+          universityId: user.universityId,
+          statement: statement,
+          submissionDate: new Date().toISOString().split('T')[0],
+          status: 'Applied',
+          fileName: file?.name,
+        };
+
+        try {
+          const LOCAL_STORAGE_KEY = 'jnu_scholarship_applications';
+          const storedApplicationsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+          const applications: ApplicationData[] = storedApplicationsRaw ? JSON.parse(storedApplicationsRaw) : [];
+          applications.push(applicationData);
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(applications));
+          window.dispatchEvent(new CustomEvent('dataChanged'));
+        } catch (error) {
+          console.error("Failed to save application to local storage:", error);
+        }
+
+        alert(`${applicationData.scholarshipTitle} 장학금 신청이 완료되었습니다.`);
+        handleCloseApplicationModal();
+    };
+
+
     if (view === 'hub') {
         return <ScholarshipHub user={user} onBack={() => handleNavigateTo('dashboard')} onAskAi={handleAskAi} allScholarships={allScholarships}/>;
     }
@@ -61,20 +123,16 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
         <main className="p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* JNU Banner */}
-            <a href="https://www.jnu.ac.kr" target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden shadow-lg group relative">
-                <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop" alt="전남대학교 캠퍼스 전경" className="w-full h-48 object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-110"/>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent flex flex-col items-center justify-center p-4 text-center">
-                    <h2 className="font-nanum text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg tracking-wide transition-transform duration-500 ease-in-out group-hover:scale-105 group-hover:-translate-y-2">
-                        지역과 함께 세계로 미래로
-                    </h2>
-                    <p className="text-white/80 font-semibold mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out">
-                        전남대학교 홈페이지 바로가기
-                    </p>
-                </div>
+            <a href="https://www.jnu.ac.kr" target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden shadow-lg group">
+                <img src="https://storage.cloud.google.com/personmate/test.png" alt="JNU Banner" className="w-full h-48 object-cover object-center"/>
             </a>
             
             {/* JNU Notice Card */}
-            <JnuNoticeCard isLoading={isLoading} />
+            <JnuNoticeCard 
+                isLoading={isLoading} 
+                allScholarships={allScholarships}
+                onNoticeClick={handleNoticeClick}
+            />
             
             {/* Main Dashboard Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -100,6 +158,29 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
             </div>
           </div>
         </main>
+        
+        {isDetailModalOpen && selectedScholarship && (
+          <ScholarshipDetailModal
+            isOpen={isDetailModalOpen}
+            onClose={handleCloseDetailModal}
+            scholarship={selectedScholarship}
+            onApply={handleApplyClick}
+            onAskAi={(title) => {
+              handleCloseDetailModal();
+              handleAskAi(title);
+            }}
+          />
+        )}
+
+        {isApplicationModalOpen && selectedScholarship && (
+            <ApplicationModal
+                isOpen={isApplicationModalOpen}
+                onClose={handleCloseApplicationModal}
+                onSubmit={handleApplicationSubmit}
+                scholarship={selectedScholarship}
+                user={user}
+            />
+        )}
     </div>);
 };
 export default StudentDashboard;

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { AllScholarships, User } from '../../types';
-import { getStatementReview } from '../../services/geminiService';
 
 interface ApplicationModalProps {
   isOpen: boolean;
@@ -26,6 +25,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onClose, on
   const handleAiReview = async () => {
     setIsReviewing(true);
     setReviewFeedback(null);
+    const { getStatementReview } = await import('../../services/geminiService');
     const feedback = await getStatementReview(statement);
     setReviewFeedback(feedback);
     setIsReviewing(false);

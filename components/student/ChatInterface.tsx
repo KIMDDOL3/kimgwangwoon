@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, ChatMessage, DiagnosticAnswers, AllScholarships } from '../../types';
 import { DIAGNOSTIC_QUESTIONS } from '../../constants';
-import { getChatbotResponse } from '../../services/geminiService';
 import Message from './Message';
 import DiagnosticFlow from './DiagnosticFlow';
 import { scoreScholarships } from '../../utils/scoring';
@@ -59,6 +58,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, initialPrompt, onPr
       ));
     };
     
+    const { getChatbotResponse } = await import('../../services/geminiService');
     const internalScholarships = allScholarships.filter(s => s.source === 'Internal');
     const ragResponse = await getChatbotResponse(messageText, messagesWithUser, internalScholarships, onStatusUpdate);
 

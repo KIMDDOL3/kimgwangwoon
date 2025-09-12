@@ -1,4 +1,3 @@
-
 import React from 'react';
 // FIX: Corrected import path
 import { User } from '../../types';
@@ -11,10 +10,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ user }) => {
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg p-6 border-t-4 border-green-600">
       <div className="flex items-center space-x-4 mb-4">
-        <div className="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-green-700 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-            </svg>
+        <div className="flex-shrink-0 w-12 h-12">
+            <img src="/test.png" alt={user.name} className="w-full h-full rounded-full object-cover" />
         </div>
         <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">안녕하세요, {user.name}님!</h2>

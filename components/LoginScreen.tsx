@@ -1,9 +1,13 @@
 
-import React from 'react';
-// FIX: Corrected import path
-import { Role } from '../types';
+import React, { useState, useCallback } from 'react';
+import { Role, AllScholarships, DiagnosticAnswers, ScoredScholarship, ChatMessage } from '../types';
 import Card from './ui/Card';
 import Button from './ui/Button';
+import { MOCK_STUDENT_USER, DIAGNOSTIC_QUESTIONS } from '../constants';
+import { scoreScholarships } from '../utils/scoring';
+import DiagnosticFlow from './student/DiagnosticFlow';
+import ScholarshipList from './student/ScholarshipList';
+import ChatInterface from './student/ChatInterface';
 
 // RFP (Request for Proposal) content as constants
 const RFP_GCP_SPECIFIC_MD = `
@@ -101,7 +105,6 @@ const RFP_GCP_SPECIFIC_MD = `
 *   프로젝트 관리 및 커뮤니케이션 역량 (15%)
 *   견적의 합리성 (15%)
 `;
-
 const RFP_GENERIC_MD = `
 # 전남대학교 장학금 AI Assistant 고도화 프로젝트 제안 요청서 (RFP)
 
@@ -202,16 +205,149 @@ const RFP_GENERIC_MD = `
 *   견적의 합리성 (15%)
 `;
 
+interface DiagnosticDemoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  allScholarships: AllScholarships[];
+}
+
+const DiagnosticDemoModal: React.FC<DiagnosticDemoModalProps> = ({ isOpen, onClose, allScholarships }) => {
+  const [step, setStep] = useState<'intro' | 'diagnosing' | 'results'>('intro');
+  const [results, setResults] = useState<ScoredScholarship[]>([]);
+
+  if (!isOpen) return null;
+
+  const startDiagnosis = () => {
+    setStep('diagnosing');
+  };
+
+  const handleDiagnosisComplete = (answers: DiagnosticAnswers) => {
+    const internalScholarships = allScholarships.filter(s => s.source === 'Internal' && s.requirements);
+    const recommendations = scoreScholarships(answers, internalScholarships);
+    setResults(recommendations);
+    setStep('results');
+  };
+
+  const handleReset = () => {
+    setResults([]);
+    setStep('intro');
+  };
+
+  const renderContent = () => {
+    switch(step) {
+      case 'diagnosing':
+        return (
+          <>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">맞춤 장학금 자가진단</h2>
+            <DiagnosticFlow
+              questions={DIAGNOSTIC_QUESTIONS}
+              onComplete={handleDiagnosisComplete}
+              user={MOCK_STUDENT_USER}
+            />
+          </>
+        );
+      case 'results':
+        return (
+          <>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">자가진단 결과</h2>
+            {results.length > 0 ? (
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">진단 결과를 바탕으로 회원님께 가장 적합한 장학금을 추천해 드립니다.</p>
+                <div className="max-h-96 overflow-y-auto pr-2">
+                  <ScholarshipList scholarships={results} user={MOCK_STUDENT_USER} />
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-300 text-center py-8">아쉽지만, 현재 조건에 맞는 맞춤 장학금을 찾지 못했습니다. 앱에 로그인하여 더 많은 장학금을 탐색해보세요.</p>
+            )}
+            <div className="mt-6 text-center">
+              <Button onClick={handleReset} variant="secondary">다시 진단하기</Button>
+            </div>
+          </>
+        );
+      case 'intro':
+      default:
+        return (
+          <div className="text-center">
+            <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">맞춤 장학금 찾기 (자가진단)</h2>
+            <p className="text-gray-600 dark:text-gray-300 mt-2 mb-6">몇 가지 간단한 질문에 답하고 나에게 맞는 장학금을 추천받아보세요.</p>
+            <Button onClick={startDiagnosis} variant="primary" className="w-full text-lg py-3">
+              진단 시작하기
+            </Button>
+          </div>
+        );
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300 animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg m-4 transform transition-all duration-300 animate-fade-in-up max-h-[90vh] flex flex-col">
+        <div className="flex justify-end p-2">
+           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-6 pt-0 overflow-y-auto">
+          {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChatDemoModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  allScholarships: AllScholarships[];
+}> = ({ isOpen, onClose, allScholarships }) => {
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300 animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl m-4 transform transition-all duration-300 animate-fade-in-up h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">AI 장학 도우미 체험</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="flex-grow overflow-hidden">
+          <ChatInterface
+            user={MOCK_STUDENT_USER}
+            allScholarships={allScholarships}
+            initialMessages={chatHistory}
+            onSaveHistory={setChatHistory}
+            onPromptConsumed={() => {}}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 interface LoginScreenProps {
   onRoleSelect: (role: Role) => void;
+  allScholarships: AllScholarships[];
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onRoleSelect }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onRoleSelect, allScholarships }) => {
   const gcpRfpDataUri = `data:text/markdown;charset=utf-8,${encodeURIComponent(RFP_GCP_SPECIFIC_MD)}`;
   const genericRfpDataUri = `data:text/markdown;charset=utf-8,${encodeURIComponent(RFP_GENERIC_MD)}`;
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isChatDemoModalOpen, setIsChatDemoModalOpen] = useState(false);
   
   return (
+    <>
     <div className="flex-grow flex flex-col items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-lg text-center animate-fade-in-down">
         <div className="mb-6">
@@ -238,6 +374,28 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onRoleSelect }) => {
           >
             관리자로 시작하기
           </Button>
+          <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white/50 dark:bg-gray-900/50 px-2 text-sm text-gray-500 dark:text-gray-400">체험하기</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => setIsDemoModalOpen(true)}
+              variant="secondary"
+              className="w-full text-lg py-3 bg-gradient-to-r from-sky-100 to-sky-200 hover:from-sky-200 hover:to-sky-300 dark:from-sky-800 dark:to-sky-900 dark:hover:from-sky-700 dark:hover:to-sky-800 text-sky-800 dark:text-sky-200 focus:ring-sky-300 dark:focus:ring-sky-700"
+            >
+              맞춤 장학금 자가진단 체험하기
+            </Button>
+            <Button
+              onClick={() => setIsChatDemoModalOpen(true)}
+              variant="secondary"
+              className="w-full text-lg py-3 bg-gradient-to-r from-teal-100 to-teal-200 hover:from-teal-200 hover:to-teal-300 dark:from-teal-800 dark:to-teal-900 dark:hover:from-teal-700 dark:hover:to-teal-800 text-teal-800 dark:text-teal-200 focus:ring-teal-300 dark:focus:ring-teal-700"
+            >
+              AI 장학 도우미 체험하기
+            </Button>
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-8">
           본 서비스는 실제 포털과 연동되지 않은 데모 버전입니다.
@@ -265,6 +423,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onRoleSelect }) => {
         </div>
       </Card>
     </div>
+    <DiagnosticDemoModal 
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+        allScholarships={allScholarships}
+    />
+     <ChatDemoModal 
+        isOpen={isChatDemoModalOpen}
+        onClose={() => setIsChatDemoModalOpen(false)}
+        allScholarships={allScholarships}
+    />
+    </>
   );
 };
 

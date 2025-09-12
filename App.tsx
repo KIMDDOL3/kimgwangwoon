@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from "react";
 import LoginScreen from "./components/LoginScreen";
 import StudentDashboard from "./components/student/StudentDashboard";
@@ -213,7 +214,7 @@ const App: React.FC = () => {
     };
     const renderContent = () => {
         if (!user || !role) {
-            return <LoginScreen onRoleSelect={handleRoleSelect}/>;
+            return <LoginScreen onRoleSelect={handleRoleSelect} allScholarships={scholarships} />;
         }
         if (role === 'student') {
             return (<StudentDashboard 
