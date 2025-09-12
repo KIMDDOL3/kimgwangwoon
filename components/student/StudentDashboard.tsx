@@ -124,7 +124,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
           <div className="max-w-7xl mx-auto space-y-6">
             {/* JNU Banner */}
             <a href="https://www.jnu.ac.kr" target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden shadow-lg group">
-                <img src="https://storage.cloud.google.com/personmate/test.png" alt="JNU Banner" className="w-full h-48 object-cover object-center"/>
+                <img src="https://storage.googleapis.com/personmate/test.png" alt="JNU Banner" className="w-full h-48 object-cover object-center"/>
             </a>
             
             {/* JNU Notice Card */}
