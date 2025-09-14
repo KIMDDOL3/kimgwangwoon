@@ -1,4 +1,3 @@
-
 import { RpaTaskStatus } from '../../types';
 
 export interface RpaTask {

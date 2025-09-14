@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 // FIX: Corrected import path
 import { AllScholarships } from '../../types';

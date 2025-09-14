@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import LoginScreen from "./components/LoginScreen";
-import StudentDashboard from "./components/student/StudentDashboard";
+import StudentDashboard from "./components/components/student/StudentDashboard";
 import AdminDashboard from "./components/admin/AdminDashboard";
 // FIX: Corrected import path for types
 import { User, Role, AllScholarships, AppNotification, ApplicationData, ApplicationStatus, QnaItem, CollaborationChannel, ChannelMessage, ChatMessage } from "./types";
@@ -10,7 +10,7 @@ import { MOCK_QNA_DATA } from "./components/admin/qnaData";
 const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<Role | null>(null);
-    const [scholarships, setScholarships] = useState<AllScholarships[]>(INITIAL_SCHOLARSHIPS);
+    const [scholarships, setScholarships] = useState<AllScholarships[]>([]);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [applicationData, setApplicationData] = useState<ApplicationData[]>([]);
     const [qnaData, setQnaData] = useState<QnaItem[]>([]);
@@ -39,6 +39,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const loadInitialData = async () => {
             await new Promise(resolve => setTimeout(resolve, 1500));
+            loadDataFromLocalStorage('jnu_scholarships', setScholarships, INITIAL_SCHOLARSHIPS);
             loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
             loadDataFromLocalStorage('jnu_collab_channels', setChannels);
@@ -49,6 +50,9 @@ const App: React.FC = () => {
         };
         loadInitialData();
         const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'jnu_scholarships') {
+                loadDataFromLocalStorage('jnu_scholarships', setScholarships, INITIAL_SCHOLARSHIPS);
+            }
             if (e.key === 'jnu_scholarship_applications') {
                 loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             }
@@ -69,6 +73,7 @@ const App: React.FC = () => {
             }
         };
         const handleCustomEvent = () => {
+            loadDataFromLocalStorage('jnu_scholarships', setScholarships, INITIAL_SCHOLARSHIPS);
             loadDataFromLocalStorage('jnu_scholarship_applications', setApplicationData);
             loadDataFromLocalStorage('jnu_qna_items', setQnaData, MOCK_QNA_DATA);
             loadDataFromLocalStorage('jnu_collab_channels', setChannels);
@@ -186,7 +191,10 @@ const App: React.FC = () => {
         setNotifications([]); // Clear notifications on logout
     };
     const handleAddScholarship = (newScholarship: AllScholarships) => {
-        setScholarships(prev => [...prev, { ...newScholarship, id: `new-${Date.now()}` }]);
+        const updatedScholarships = [...scholarships, { ...newScholarship, id: `new-${Date.now()}` }];
+        localStorage.setItem('jnu_scholarships', JSON.stringify(updatedScholarships));
+        setScholarships(updatedScholarships);
+        window.dispatchEvent(new CustomEvent('dataChanged'));
     };
     const handlePushNotification = (scholarship: AllScholarships, message: string) => {
         const newNotification: AppNotification = {
@@ -205,11 +213,17 @@ const App: React.FC = () => {
         setNotifications([]);
     };
     const handleUpdateScholarship = (updatedScholarship: AllScholarships) => {
-        setScholarships(prev => prev.map(s => s.id === updatedScholarship.id ? updatedScholarship : s));
+        const updatedScholarships = scholarships.map(s => s.id === updatedScholarship.id ? updatedScholarship : s);
+        localStorage.setItem('jnu_scholarships', JSON.stringify(updatedScholarships));
+        setScholarships(updatedScholarships);
+        window.dispatchEvent(new CustomEvent('dataChanged'));
     };
     const handleDeleteScholarship = (scholarshipId: string) => {
         if (window.confirm('정말로 이 장학금 정보를 삭제하시겠습니까?')) {
-            setScholarships(prev => prev.filter(s => s.id !== scholarshipId));
+            const updatedScholarships = scholarships.filter(s => s.id !== scholarshipId);
+            localStorage.setItem('jnu_scholarships', JSON.stringify(updatedScholarships));
+            setScholarships(updatedScholarships);
+            window.dispatchEvent(new CustomEvent('dataChanged'));
         }
     };
     const renderContent = () => {

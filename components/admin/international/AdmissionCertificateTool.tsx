@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
@@ -14,6 +13,19 @@ interface ProcessResult {
     status: ProcessStatus;
     details: string;
 }
+
+// Data for the sample CSV file download link
+const sampleCsvData = [
+    `"성명 (Name)","국적 (Nationality)","여권번호 (Passport No)","과정 (Program)"`,
+    `"Michael Smith","USA","US12345678","Korean Language Program"`,
+    `"Chen Wei","China","CN98765432","Exchange Student (Business)"`,
+    `"Yuki Tanaka","Japan","JP55566677","M.Sc. Computer Science"`,
+    `"Linh Nguyen","Vietnam","VN88899900","Ph.D. Agriculture"`,
+    `"Hans Müller","Germany","DE11122233","Exchange Student (Engineering)"`
+].join('\n');
+
+const csvDataUri = `data:text/csv;charset=utf-8,${'\uFEFF'}${encodeURIComponent(sampleCsvData)}`;
+
 
 const AdmissionCertificateTool: React.FC = () => {
     const [step, setStep] = useState<ProcessStep>('upload');
@@ -111,7 +123,17 @@ const AdmissionCertificateTool: React.FC = () => {
     const renderUploadStep = () => (
         <div>
              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">1. 발급 대상자 데이터 추출</h4>
-             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">입학허가를 발급할 학생 명단이 포함된 엑셀 파일을 업로드하세요.</p>
+             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">입학허가를 발급할 학생 명단이 포함된 엑셀 파일을 업로드하세요.</p>
+             <div className="mb-4">
+                <a 
+                    href={csvDataUri}
+                    download="admitted_students_list.csv"
+                    className="text-sm text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-semibold inline-flex items-center"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                    테스트용 샘플 엑셀 파일 다운로드 (.csv)
+                </a>
+             </div>
              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                     <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>

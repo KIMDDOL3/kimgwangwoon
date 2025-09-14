@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Card from '../../ui/Card';
 import WorkStudyVerificationTool from './WorkStudyVerificationTool';
@@ -8,17 +7,19 @@ import { RPA_TASKS, STATUS_CONFIG } from '../rpaData';
 import DataDisclosureTool from './DataDisclosureTool';
 import DualCreditVerificationTool from './DualCreditVerificationTool';
 import ExternalScholarshipMonitorTool from './ExternalScholarshipMonitorTool';
+import StatusUpdateAutomationTool from './StatusUpdateAutomationTool'; // Import new component
+import { ApplicationData, ApplicationStatus, AllScholarships } from '../../../types'; // Import types for props
 
-const TOOL_COMPONENTS: Record<string, React.FC> = {
-    'task-01': WorkStudyVerificationTool,
-    'task-03': DataDisclosureTool,
-    'task-04': ScholarshipStatusInquiryTool,
-    'task-05': DualCreditVerificationTool,
-    // Add other tools as they are created
-};
+// Add props interface
+interface AutomationToolsProps {
+    applicationData: ApplicationData[];
+    onUpdateStatus: (userId: string, scholarshipId: string, submissionDate: string, newStatus: ApplicationStatus) => void;
+    onAdd: (scholarship: AllScholarships) => void;
+    onPushNotification: (scholarship: AllScholarships, message: string) => void;
+}
 
 
-const AutomationTools: React.FC = () => {
+const AutomationTools: React.FC<AutomationToolsProps> = ({ applicationData, onUpdateStatus, onAdd, onPushNotification }) => {
     return (
         <div className="space-y-8 animate-fade-in-up">
             <Card>
@@ -33,10 +34,12 @@ const AutomationTools: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                <WorkStudyVerificationTool />
+               {/* Render new component and pass props */}
+               <StatusUpdateAutomationTool applications={applicationData} onUpdateStatus={onUpdateStatus} />
                <ScholarshipStatusInquiryTool />
                <DataDisclosureTool />
                <DualCreditVerificationTool />
-               <ExternalScholarshipMonitorTool />
+               <ExternalScholarshipMonitorTool onAdd={onAdd} onPushNotification={onPushNotification} />
             </div>
         </div>
     );

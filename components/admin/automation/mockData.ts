@@ -1,5 +1,4 @@
 
-
 // FIX: Corrected import path
 import { StudentProfile, InternationalStudent } from '../../../types';
 

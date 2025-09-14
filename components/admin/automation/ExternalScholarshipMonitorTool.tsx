@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import Card from '../../ui/Card';
 import Button from '../../ui/Button';
-import { MOCK_SCRAPED_SCHOLARSHIPS } from './mockData';
+import { MOCK_SCRAPED_SCHOLARSHIPS, ScrapedScholarship } from './mockData';
+import { AllScholarships } from '../../../types';
 
-const ExternalScholarshipMonitorTool: React.FC = () => {
+interface ExternalScholarshipMonitorToolProps {
+    onAdd: (scholarship: AllScholarships) => void;
+    onPushNotification: (scholarship: AllScholarships, message: string) => void;
+}
+
+const ExternalScholarshipMonitorTool: React.FC<ExternalScholarshipMonitorToolProps> = ({ onAdd, onPushNotification }) => {
     const [scholarships, setScholarships] = useState(MOCK_SCRAPED_SCHOLARSHIPS);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,11 +32,29 @@ const ExternalScholarshipMonitorTool: React.FC = () => {
         }, 2000);
     };
 
-    const handleImport = (index: number) => {
-        const newScholarships = [...scholarships];
-        newScholarships.splice(index, 1);
-        setScholarships(newScholarships);
-        // Here you would typically call an API to add the scholarship to the main system
+    const handleImport = (scrapedScholarship: ScrapedScholarship, index: number) => {
+        const newScholarship: AllScholarships = {
+            id: `ext-${Date.now()}`,
+            title: scrapedScholarship.title,
+            category: 'Other',
+            source: 'External',
+            provider: scrapedScholarship.foundation,
+            summary: scrapedScholarship.summary,
+            deadline: scrapedScholarship.deadline,
+            applicationUrl: scrapedScholarship.applicationUrl,
+            fullDescription: scrapedScholarship.summary, // Use summary as full description
+        };
+
+        // Add to main system
+        onAdd(newScholarship);
+
+        // Push notification to students
+        onPushNotification(newScholarship, `새로운 교외 장학금 '${newScholarship.title}' 공고를 확인해보세요!`);
+
+        // Remove from local list of scraped items
+        const updatedScholarships = [...scholarships];
+        updatedScholarships.splice(index, 1);
+        setScholarships(updatedScholarships);
     };
 
     return (
@@ -62,7 +86,7 @@ const ExternalScholarshipMonitorTool: React.FC = () => {
                             <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">{s.summary}</p>
                             <div className="mt-3 flex justify-end gap-2">
                                 <Button onClick={() => alert('상세정보 링크로 이동합니다.')} variant="secondary" className="py-1 px-3 text-xs">상세 보기</Button>
-                                <Button onClick={() => handleImport(index)} variant="primary" className="py-1 px-3 text-xs">시스템에 추가</Button>
+                                <Button onClick={() => handleImport(s, index)} variant="primary" className="py-1 px-3 text-xs">시스템에 추가</Button>
                             </div>
                         </div>
                     ))}

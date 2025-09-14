@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 // FIX: Corrected import path and added new types
-import { User, AllScholarships, AppNotification, QnaItem, ChatMessage, ApplicationData } from '../../types';
+import { User, AllScholarships, AppNotification, QnaItem, ChatMessage, ApplicationData, ScoredScholarship, DiagnosticAnswers } from '../../types';
 import ProfileCard from './ProfileCard';
 import ChatInterface from './ChatInterface';
 import ApplicationHistory from './ApplicationHistory';
 import ScholarshipHubPreview from './hub/ScholarshipHubPreview';
 import ScholarshipHub from './hub/ScholarshipHub';
-import GpaSearchCard from './GpaSearchCard';
 import Button from '../ui/Button';
 import NationalScholarshipCard from './NationalScholarshipCard';
 import NotificationBell from './NotificationBell';
@@ -15,6 +15,9 @@ import StudentQnaBoard from './qna/StudentQnaBoard';
 import QnaCard from './qna/QnaCard';
 import ScholarshipDetailModal from './ScholarshipDetailModal';
 import ApplicationModal from './ApplicationModal';
+import { scoreScholarships } from '../../utils/scoring';
+import RecommendedScholarships from './RecommendedScholarships';
+import GpaSearchCard from './GpaSearchCard';
 
 interface StudentDashboardProps {
     user: User;
@@ -37,6 +40,21 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
     const [selectedScholarship, setSelectedScholarship] = useState<AllScholarships | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
+
+    const recommendedScholarships = useMemo((): ScoredScholarship[] => {
+        // For demo purposes, we'll use the user's profile and add mock data for GPA and income bracket,
+        // as the base User object doesn't contain them. In a real app, this data would come from the user's profile.
+        const studentAnswers: DiagnosticAnswers = {
+            gpa: 3.8, // Mock GPA for '김광운'
+            incomeBracket: 6, // Mock income bracket for '김광운'
+            year: user.year,
+            department: user.department,
+        };
+        // Filter for scholarships that have requirements to be scored
+        const scorableScholarships = allScholarships.filter(s => s.requirements);
+        return scoreScholarships(studentAnswers, scorableScholarships);
+    }, [user, allScholarships]);
+
 
     const handleNavigateTo = (targetView: StudentView) => setView(targetView);
     const handlePromptConsumed = () => setInitialChatPrompt(null);
@@ -138,8 +156,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, onLogout, all
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 space-y-6">
                 <ProfileCard user={user}/>
+
+                {recommendedScholarships.length > 0 && (
+                    <RecommendedScholarships user={user} scholarships={recommendedScholarships} />
+                )}
+                
                 <NationalScholarshipCard allScholarships={allScholarships} onAskAi={handleAskAi}/>
-                <GpaSearchCard allScholarships={allScholarships} onAskAi={handleAskAi}/>
                 <ScholarshipHubPreview onNavigate={() => handleNavigateTo('hub')} allScholarships={allScholarships}/>
                 <ApplicationHistory isLoading={isLoading} />
                 <QnaCard onNavigate={() => handleNavigateTo('qna')} qnaData={qnaData}/>

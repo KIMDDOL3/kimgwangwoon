@@ -105,7 +105,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
                     onSelectChannel={setSelectedChannelId}
                 />;
             case 'automation':
-                return <AutomationTools />;
+                return <AutomationTools 
+                    applicationData={applicationData} 
+                    onUpdateStatus={onUpdateStatus} 
+                    onAdd={onAdd} 
+                    onPushNotification={onPushNotification}
+                />;
             case 'rpa':
                 return <RpaDashboard />;
             case 'student-lookup':
